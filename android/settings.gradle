@@ -1,0 +1,36 @@
+// android/settings.gradle
+
+pluginManagement {
+    // HARUS paling atas
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+
+    // Baca Flutter SDK path & expose build logic Flutter
+    def localProps = new Properties()
+    def lpFile = new File(rootDir, "local.properties")
+    if (lpFile.exists()) {
+        lpFile.withReader("UTF-8") { r -> localProps.load(r) }
+    }
+    def flutterSdkPath = localProps.getProperty("flutter.sdk")
+    if (flutterSdkPath == null) {
+        throw new GradleException("Flutter SDK not found. Define flutter.sdk in local.properties")
+    }
+
+    // penting: include build logic Flutter supaya plugin ketemu
+    includeBuild("${flutterSdkPath}/packages/flutter_tools/gradle")
+}
+
+plugins {
+    // 👉 tanpa version (biar di-resolve dari includeBuild di atas)
+    id "dev.flutter.flutter-plugin-loader"
+
+    // AGP & Kotlin pakai versi eksplisit
+    id "com.android.application" version "8.5.2" apply false
+    id "com.android.library"    version "8.5.2" apply false
+    id "org.jetbrains.kotlin.android" version "1.9.24" apply false
+}
+
+include(":app")

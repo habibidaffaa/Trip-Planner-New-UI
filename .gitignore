@@ -1,0 +1,39 @@
+# Flutter & Dart
+/build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+
+# Android
+/android/app/debug
+/android/app/profile
+/android/app/release
+/android/local.properties
+/android/.gradle
+/android/captures/
+
+# iOS
+/ios/Pods/
+/ios/.generated/
+/ios/Runner.xcworkspace/
+/ios/Flutter/Generated.xcconfig
+
+# IDE
+.idea/
+*.iml
+.vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+
+# Secrets
+.env
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+
+# OS
+.DS_Store
+Thumbs.db

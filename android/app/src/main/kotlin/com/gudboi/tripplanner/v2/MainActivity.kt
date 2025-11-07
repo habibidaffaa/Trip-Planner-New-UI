@@ -1,0 +1,6 @@
+package com.gudboi.tripplanner.v2
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity() {
+}

@@ -1,0 +1,35 @@
+{
+  "id": "chatcmpl-Aq1YDskV86Co5UcQz6PqBUwevIALs",
+  "object": "chat.completion",
+  "created": 1736962381,
+  "model": "gpt-4o-2024-08-06",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"itinerary\":[{\"date\":\"20/01/2025\",\"activities\":[{\"title\":\"Departure from Surabaya\",\"location\":\"Juanda International Airport\",\"start_time\":\"07:00\",\"end_time\":\"08:30\",\"description\":\"Fly from Surabaya to Yogyakarta with an early morning flight to make the most out of your first day.\"},{\"title\":\"Breakfast at Lokal Hotel & Restaurant\",\"location\":\"Lokal Hotel & Restaurant, Jogja\",\"start_time\":\"09:30\",\"end_time\":\"10:30\",\"description\":\"Enjoy a hearty breakfast with local and international food options to start your day.\"},{\"title\":\"Visit Prambanan Temple\",\"location\":\"Prambanan Temple Complex\",\"start_time\":\"11:00\",\"end_time\":\"13:00\",\"description\":\"Explore the magnificent Prambanan Temple, a UNESCO World Heritage site.\"},{\"title\":\"Lunch at Abhayagiri Restaurant\",\"location\":\"Abhayagiri Restaurant, Jogja\",\"start_time\":\"13:30\",\"end_time\":\"15:00\",\"description\":\"Have lunch with a view of the Prambanan Temple and Mount Merapi.\"},{\"title\":\"Check-in at Hotel\",\"location\":\"The Phoenix Hotel Yogyakarta\",\"start_time\":\"15:30\",\"end_time\":\"16:00\",\"description\":\"Check in and settle into your accommodation in the heart of Yogyakarta.\"},{\"title\":\"Explore Jalan Malioboro\",\"location\":\"Jalan Malioboro, Jogja\",\"start_time\":\"17:00\",\"end_time\":\"19:00\",\"description\":\"Stroll down this famous shopping street and enjoy local shops and street food.\"},{\"title\":\"Dinner at Legend Coffee\",\"location\":\"Legend Coffee, Jogja\",\"start_time\":\"19:30\",\"end_time\":\"21:00\",\"description\":\"Relax with a delicious dinner at one of Jogja's popular eateries.\"}]},{\"date\":\"21/01/2025\",\"activities\":[{\"title\":\"Sunrise at Borobudur Temple\",\"location\":\"Borobudur Temple\",\"start_time\":\"04:30\",\"end_time\":\"08:00\",\"description\":\"Watch the sunrise over Borobudur, the largest Buddhist temple in the world.\"},{\"title\":\"Breakfast at Stupa Restaurant\",\"location\":\"Stupa Restaurant by Plataran\",\"start_time\":\"08:30\",\"end_time\":\"09:30\",\"description\":\"Enjoy a traditional breakfast near Borobudur with stunning views.\"},{\"title\":\"Visit Ullen Sentalu Museum\",\"location\":\"Ullen Sentalu Museum\",\"start_time\":\"10:30\",\"end_time\":\"12:00\",\"description\":\"Discover Java's rich cultural and artistic heritage.\"},{\"title\":\"Lunch at The House of Raminten\",\"location\":\"The House of Raminten, Jogja\",\"start_time\":\"12:30\",\"end_time\":\"14:00\",\"description\":\"Experience a quirky dining environment with local cuisine.\"},{\"title\":\"Explore Kalibiru National Park\",\"location\":\"Kalibiru National Park\",\"start_time\":\"15:00\",\"end_time\":\"17:00\",\"description\":\"Enjoy nature and take photos at this scenic park offering breathtaking views.\"},{\"title\":\"Return to Surabaya\",\"location\":\"Adisutjipto International Airport\",\"start_time\":\"18:30\",\"end_time\":\"20:00\",\"description\":\"Catch your flight back to Surabaya and conclude your short yet fulfilling getaway.\"}]}]}",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 188,
+    "completion_tokens": 666,
+    "total_tokens": 854,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_50cad350e4"
+}
