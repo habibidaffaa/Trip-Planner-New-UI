@@ -6,6 +6,8 @@ import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../widget/loading_overlay.dart';
+
 class FormSuggestion extends StatefulWidget {
   final List<DateTime> selectedDays;
 
@@ -16,7 +18,6 @@ class FormSuggestion extends StatefulWidget {
 }
 
 class FormSuggestionState extends State<FormSuggestion> {
-  bool _isLoading = false;
   // Daftar lokasi statis untuk dropdown
   final List<String> _locations = [
     "Surabaya",
@@ -158,7 +159,6 @@ class FormSuggestionState extends State<FormSuggestion> {
                               ),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            enabled: !_isLoading,
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide(
@@ -248,7 +248,6 @@ class FormSuggestionState extends State<FormSuggestion> {
                               ),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            enabled: !_isLoading,
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide(
@@ -276,13 +275,12 @@ class FormSuggestionState extends State<FormSuggestion> {
                     height: 40,
                   ),
                   InkWell(
-                    onTap: !_isLoading
+                    onTap: (_selectedDepartureLocation != null &&
+                            _selectedDestinationLocation != null)
                         ? (_selectedDepartureLocation != null &&
                                 _selectedDestinationLocation != null)
                             ? () async {
-                                setState(() {
-                                  _isLoading = true;
-                                });
+                                LoadingOverlay.show(context);
                                 List<Itinerary> results = await context
                                     .read<ItineraryProvider>()
                                     .generateItineraryByAi(
@@ -290,11 +288,19 @@ class FormSuggestionState extends State<FormSuggestion> {
                                       destination:
                                           _selectedDestinationLocation!,
                                       dates: widget.selectedDays,
-                                    );
-
-                                setState(() {
-                                  _isLoading = false;
+                                    )
+                                    .catchError((err) {
+                                  LoadingOverlay.hide();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        err.toString(),
+                                      ),
+                                    ),
+                                  );
                                 });
+
+                                LoadingOverlay.hide();
                                 Navigator.pop(context);
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
@@ -311,46 +317,20 @@ class FormSuggestionState extends State<FormSuggestion> {
                       height: 50,
                       // width: 270,
                       decoration: BoxDecoration(
-                        color: _isLoading
-                            ? CustomColor.disabledColor
-                            : CustomColor.primaryColor500,
+                        color: CustomColor.primaryColor500,
                         borderRadius: const BorderRadius.all(
                           Radius.circular(100.0),
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: _isLoading
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    color: CustomColor.whiteColor,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  "Loading",
-                                  style: primaryTextStyle.copyWith(
-                                    color: CustomColor.whiteColor,
-                                    fontWeight: semibold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Text(
-                              "SUBMIT",
-                              style: primaryTextStyle.copyWith(
-                                color: CustomColor.whiteColor,
-                                fontWeight: semibold,
-                                fontSize: 16,
-                              ),
-                            ),
+                      child: Text(
+                        "SUBMIT",
+                        style: primaryTextStyle.copyWith(
+                          color: CustomColor.whiteColor,
+                          fontWeight: semibold,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ),
                   // TextButton(

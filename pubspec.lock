@@ -637,6 +637,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  overlay_loading_progress:
+    dependency: "direct main"
+    description:
+      name: overlay_loading_progress
+      sha256: b509d4c29ef1b57770a3aa443ea4e38aa2ad1dab14879cbe361617bc84af85b7
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   path:
     dependency: "direct main"
     description:

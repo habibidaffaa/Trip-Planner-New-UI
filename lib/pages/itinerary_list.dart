@@ -61,9 +61,10 @@ class _ItineraryListState extends State<ItineraryList> {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         floatingActionButton: FloatingActionButton(
+          elevation: 2,
           shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10.0))),
-          backgroundColor: const Color(0xFFC58940),
+              borderRadius: BorderRadius.all(Radius.circular(100.0))),
+          backgroundColor: CustomColor.primary,
           onPressed: () {
             getItineraryTitle(context);
           },
@@ -157,6 +158,11 @@ class _ItineraryListState extends State<ItineraryList> {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (snapshot.hasData) {
                       final itineraries = snapshot.data!;
+                      if (itineraries.isEmpty) {
+                        return const Center(
+                            child: Text('Anda belum mempunyai trip.'));
+                      }
+
                       return ListView.separated(
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(

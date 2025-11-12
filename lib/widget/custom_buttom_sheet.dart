@@ -74,7 +74,7 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
               keyboardType: TextInputType.name,
               maxLines: 1,
               decoration: InputDecoration(
-                isDense: true, // Added this
+                isDense: true,
                 counterText: "",
                 contentPadding: const EdgeInsets.all(15),
                 hintText: 'Masukan Nama Trip Anda',

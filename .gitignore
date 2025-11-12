@@ -37,3 +37,4 @@ GoogleService-Info.plist
 # OS
 .DS_Store
 Thumbs.db
+.vscode/templates

@@ -5,6 +5,7 @@ import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:google_places_flutter/model/prediction.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/widget/location_autocomplete_field.dart';
+import 'package:iterasi1/widget/text_field_wirdget.dart';
 
 import '../../model/activity.dart';
 
@@ -131,6 +132,7 @@ class _AddActivitiesState extends State<AddActivities> {
     );
 
     log(_selectedStartTime.format(context));
+    log(newActivity.toJson().toString());
 
     widget.onSubmit(newActivity);
     Navigator.of(context).pop();
@@ -144,303 +146,357 @@ class _AddActivitiesState extends State<AddActivities> {
             ? _isLokasiValid
             : (_isLokasiValid && _isFromAutocomplete));
     return Scaffold(
-      backgroundColor: CustomColor.surface,
+      backgroundColor: CustomColor.whiteColor,
       appBar: AppBar(
-        backgroundColor: CustomColor.surface,
-        title: const Text(
-          "Tambah Aktivitas",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: 'poppins_bold',
-            fontSize: 30,
-            color: CustomColor.buttonColor,
+        // toolbarHeight: 118,
+        backgroundColor: CustomColor.primaryColor500,
+        title: Text(
+          'Tambah Aktivitas',
+          style: primaryTextStyle.copyWith(
+            fontWeight: semibold,
+            fontSize: 18,
+            // fontFamily: 'poppins_bold',
+            color: CustomColor.whiteColor,
+          ),
+          // itineraryProvider.itinerary.title,
+        ),
+        centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.all(3.0),
+          child: BackButton(
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: CustomColor.whiteColor,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
         ),
+        elevation: 0,
       ),
-      body: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                scrollDirection: Axis.vertical,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    scrollDirection: Axis.vertical,
                     children: [
-                      const Text(
-                        "Judul",
-                        style: TextStyle(
-                          fontFamily: 'poppins_bold',
-                          fontSize: 20,
-                          color: Colors.black,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: titleController,
-                        decoration: InputDecoration(
-                          hintStyle: const TextStyle(fontSize: 16),
-                          hintText: 'Cth. Persiapan Berangkat',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: _isTitleValid ? Colors.grey : Colors.red,
-                              width: 2,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Judul",
+                            style: TextStyle(
+                              color: CustomColor.blackColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: titleController,
+                            decoration: InputDecoration(
+                              hintStyle: const TextStyle(fontSize: 16),
+                              hintText: 'Cth. Persiapan Berangkat',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                                borderSide: BorderSide(
+                                  color:
+                                      _isTitleValid ? Colors.grey : Colors.red,
+                                  width: 2,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                                borderSide: BorderSide(
+                                  color: _isTitleValid
+                                      ? CustomColor.primary
+                                      : Colors.red,
+                                  width: 2,
+                                ),
+                              ),
                             ),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: _isTitleValid
-                                  ? const Color(0xFF305A5A)
-                                  : Colors.red,
-                              width: 2,
+                          if (_showTitleValidationMessage)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 4.0),
+                              child: Text(
+                                'Judul tidak boleh kosong',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Poppins',
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      LocationAutocompleteField(
+                        initialIsCustomLocation: _isCustomLocation,
+                        controller: lokasiController,
+                        isValid: _isLokasiValid,
+                        onLocationChanged: (value, isCustom,
+                            {bool fromAutocomplete = false}) {
+                          setState(() {
+                            lokasi = value;
+                            _isCustomLocation = isCustom;
+                            _isFromAutocomplete = fromAutocomplete;
+
+                            _isLokasiValid = isCustom
+                                ? value.trim().isNotEmpty
+                                : fromAutocomplete && value.trim().isNotEmpty;
+
+                            log("Lokasi dipilih: $value");
+                            log("isCustom: $isCustom");
+                            log("fromAutocomplete: $fromAutocomplete");
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Mulai',
+                                  style: TextStyle(
+                                    fontFamily: 'poppins_bold',
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: GestureDetector(
+                                    onTap: () => _selectStartTime(context),
+                                    child: Container(
+                                      width: 145,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: CustomColor.borderColor,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 10),
+                                              child: Text(
+                                                _selectedStartTime
+                                                    .format(context),
+                                                style: const TextStyle(
+                                                  fontFamily: 'Poppins',
+                                                  fontSize: 20,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          const Icon(
+                                            Icons.access_time,
+                                            size: 30,
+                                            color: Colors.black,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Selesai',
+                                  style: TextStyle(
+                                    fontFamily: 'poppins_bold',
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: GestureDetector(
+                                    onTap: () => _selectEndTime(context),
+                                    child: Container(
+                                      width: 145,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: CustomColor.borderColor,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 10),
+                                              child: Text(
+                                                _selectedEndTime
+                                                    .format(context),
+                                                style: const TextStyle(
+                                                  fontFamily: 'Poppins',
+                                                  fontSize: 20,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          const Icon(
+                                            Icons.access_time,
+                                            size: 30,
+                                            color: Colors.black,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      if (_showTitleValidationMessage)
+                      if (!_isEndTimeValid)
                         const Padding(
                           padding: EdgeInsets.only(top: 8.0),
                           child: Text(
-                            'Judul tidak boleh kosong',
+                            'Waktu Selesai tidak boleh mendahului Waktu Mulai!',
                             style: TextStyle(
                               fontFamily: 'Poppins',
                               color: Colors.red,
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  LocationAutocompleteField(
-                    controller: lokasiController,
-                    isValid: _isLokasiValid,
-                    onLocationChanged: (value, isCustom,
-                        {bool fromAutocomplete = false}) {
-                      setState(() {
-                        print("Lokasi dipilih: $value");
-                        print("isCustom: $isCustom");
-                        print("fromAutocomplete: $fromAutocomplete");
-
-                        lokasi = value;
-                        _isCustomLocation = isCustom;
-                        _isFromAutocomplete = fromAutocomplete;
-
-                        _isLokasiValid = isCustom
-                            ? value.trim().isNotEmpty
-                            : fromAutocomplete && value.trim().isNotEmpty;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Mulai',
-                              style: TextStyle(
-                                fontFamily: 'poppins_bold',
-                                fontSize: 20,
-                                color: Colors.black,
-                              ),
+                      const SizedBox(height: 25),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Keterangan',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
                             ),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              width: double.infinity,
-                              child: GestureDetector(
-                                onTap: () => _selectStartTime(context),
-                                child: Container(
-                                  width: 145,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: CustomColor.borderColor,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 10),
-                                          child: Text(
-                                            _selectedStartTime.format(context),
-                                            style: const TextStyle(
-                                              fontFamily: 'Poppins',
-                                              fontSize: 20,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      const Icon(
-                                        Icons.access_time,
-                                        size: 30,
-                                        color: Colors.black,
-                                      ),
-                                    ],
-                                  ),
+                            // overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: keteranganController,
+                            keyboardType: TextInputType.multiline,
+                            minLines: 4,
+                            maxLines: null,
+                            textAlignVertical: TextAlignVertical.center,
+                            decoration: InputDecoration(
+                              hintStyle: const TextStyle(fontSize: 16),
+                              hintText:
+                                  'Cth. Pastikan semua barang tidak ada yang tertinggal',
+                              hintMaxLines: 3,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Colors.black,
+                                  width: 2,
                                 ),
                               ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 20),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Selesai',
-                              style: TextStyle(
-                                fontFamily: 'poppins_bold',
-                                fontSize: 20,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              width: double.infinity,
-                              child: GestureDetector(
-                                onTap: () => _selectEndTime(context),
-                                child: Container(
-                                  width: 145,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: CustomColor.borderColor,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 10),
-                                          child: Text(
-                                            _selectedEndTime.format(context),
-                                            style: const TextStyle(
-                                              fontFamily: 'Poppins',
-                                              fontSize: 20,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      const Icon(
-                                        Icons.access_time,
-                                        size: 30,
-                                        color: Colors.black,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  if (!_isEndTimeValid)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        'Waktu Selesai tidak boleh mendahului Waktu Mulai!',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.red,
+                ),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: CustomColor.whiteColor,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x26000000),
+                    blurRadius: 12,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: isFormValid ? _submitActivity : null,
+                      child: Container(
+                        height: 50,
+                        // width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: isFormValid
+                              ? CustomColor.primary
+                              : CustomColor.hintTextColor,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(100.0),
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Simpan Aktivitas',
+                          style: primaryTextStyle.copyWith(
+                            fontWeight: semibold,
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  const SizedBox(height: 25),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Keterangan',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                        // overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: keteranganController,
-                        keyboardType: TextInputType.multiline,
-                        minLines: 4,
-                        maxLines: null,
-                        textAlignVertical: TextAlignVertical.center,
-                        decoration: InputDecoration(
-                          hintStyle: const TextStyle(fontSize: 16),
-                          hintText:
-                              'Cth. Pastikan semua barang tidak ada yang tertinggal',
-                          hintMaxLines: 3,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Colors.black,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 20),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor:
-                    isFormValid ? CustomColor.buttonColor : Colors.grey,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                minimumSize: const Size(double.infinity, 60),
-              ),
-              onPressed: isFormValid ? _submitActivity : null,
-              child: const Text(
-                'Simpan Aktivitas',
-                style: TextStyle(
-                  fontFamily: 'poppins_bold',
-                  fontSize: 20,
-                  color: Color(0xFFFFFFFF),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

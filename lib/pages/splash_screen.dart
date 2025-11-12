@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:iterasi1/resource/theme.dart';
-import 'package:iterasi1/resource/theme.dart';
 
 import 'itinerary_list.dart';
 

@@ -9,6 +9,8 @@ class LocationAutocompleteField extends StatefulWidget {
   final Function(String location, bool isCustom, {bool fromAutocomplete})
       onLocationChanged;
 
+  final bool initialIsCustomLocation;
+
   final bool isValid;
   final TextEditingController controller;
 
@@ -17,6 +19,7 @@ class LocationAutocompleteField extends StatefulWidget {
     required this.onLocationChanged,
     required this.isValid,
     required this.controller,
+    this.initialIsCustomLocation = false,
   }) : super(key: key);
 
   @override
@@ -45,9 +48,21 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
   @override
   void initState() {
     super.initState();
+    isCustomLocation = widget.initialIsCustomLocation;
     widget.controller.addListener(() {
       setState(() {}); // untuk update tombol clear
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant LocationAutocompleteField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.initialIsCustomLocation != widget.initialIsCustomLocation) {
+      setState(() {
+        isCustomLocation = widget.initialIsCustomLocation;
+      });
+    }
   }
 
   @override
@@ -134,6 +149,13 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     return TypeAheadField<Map<String, dynamic>>(
       controller: widget.controller,
       suggestionsCallback: _getSuggestions,
+      errorBuilder: (context, error) => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          'Error: $error',
+          style: const TextStyle(color: Colors.red),
+        ),
+      ),
       itemBuilder: (context, suggestion) {
         return ListTile(
           title: Text(suggestion['description']),

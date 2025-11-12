@@ -253,34 +253,36 @@ class ActivityCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                          VerticalDivider(),
-                          InkWell(
-                            onTap: () {
-                              Navigator.pop(context);
-                              openGoogleMaps(data.lokasi);
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.map_outlined,
-                                  color: CustomColor.primaryColor900,
-                                  size: 18,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  'Map',
-                                  style: primaryTextStyle.copyWith(
-                                    fontWeight: semibold,
-                                    fontSize: 16,
+                          if (!data.isCustomLocation) ...[
+                            VerticalDivider(),
+                            InkWell(
+                              onTap: () {
+                                Navigator.pop(context);
+                                openGoogleMaps(data.lokasi);
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.map_outlined,
                                     color: CustomColor.primaryColor900,
+                                    size: 18,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    'Map',
+                                    style: primaryTextStyle.copyWith(
+                                      fontWeight: semibold,
+                                      fontSize: 16,
+                                      color: CustomColor.primaryColor900,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
