@@ -187,6 +187,7 @@ class _AddActivitiesState extends State<AddActivities> {
                   child: ListView(
                     physics: const BouncingScrollPhysics(),
                     scrollDirection: Axis.vertical,
+                    padding: const EdgeInsets.only(top: 20, bottom: 50),
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,11 +200,12 @@ class _AddActivitiesState extends State<AddActivities> {
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 5),
                           TextField(
                             controller: titleController,
                             decoration: InputDecoration(
-                              hintStyle: const TextStyle(fontSize: 16),
+                              hintStyle: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w400),
                               hintText: 'Cth. Persiapan Berangkat',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
@@ -268,15 +270,14 @@ class _AddActivitiesState extends State<AddActivities> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Mulai',
                                   style: TextStyle(
-                                    fontFamily: 'poppins_bold',
-                                    fontSize: 20,
-                                    color: Colors.black,
+                                    color: CustomColor.blackColor,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 5),
                                 SizedBox(
                                   width: double.infinity,
                                   child: GestureDetector(
@@ -285,20 +286,20 @@ class _AddActivitiesState extends State<AddActivities> {
                                       width: 145,
                                       height: 60,
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(5),
                                         border: Border.all(
                                           color: CustomColor.borderColor,
                                           width: 1,
                                         ),
                                       ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
                                               child: Text(
                                                 _selectedStartTime
                                                     .format(context),
@@ -309,14 +310,14 @@ class _AddActivitiesState extends State<AddActivities> {
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 5),
-                                          const Icon(
-                                            Icons.access_time,
-                                            size: 30,
-                                            color: Colors.black,
-                                          ),
-                                        ],
+                                            const SizedBox(width: 5),
+                                            const Icon(
+                                              Icons.access_time,
+                                              size: 25,
+                                              color: CustomColor.borderColor,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -329,15 +330,14 @@ class _AddActivitiesState extends State<AddActivities> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Selesai',
                                   style: TextStyle(
-                                    fontFamily: 'poppins_bold',
-                                    fontSize: 20,
-                                    color: Colors.black,
+                                    color: CustomColor.blackColor,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 5),
                                 SizedBox(
                                   width: double.infinity,
                                   child: GestureDetector(
@@ -346,20 +346,20 @@ class _AddActivitiesState extends State<AddActivities> {
                                       width: 145,
                                       height: 60,
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(5),
                                         border: Border.all(
                                           color: CustomColor.borderColor,
                                           width: 1,
                                         ),
                                       ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
                                               child: Text(
                                                 _selectedEndTime
                                                     .format(context),
@@ -370,14 +370,14 @@ class _AddActivitiesState extends State<AddActivities> {
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 5),
-                                          const Icon(
-                                            Icons.access_time,
-                                            size: 30,
-                                            color: Colors.black,
-                                          ),
-                                        ],
+                                            const SizedBox(width: 5),
+                                            const Icon(
+                                              Icons.access_time,
+                                              size: 25,
+                                              color: CustomColor.borderColor,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -402,17 +402,15 @@ class _AddActivitiesState extends State<AddActivities> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Keterangan',
                             style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: CustomColor.blackColor,
+                              fontWeight: FontWeight.w500,
                             ),
                             // overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 5),
                           TextField(
                             controller: keteranganController,
                             keyboardType: TextInputType.multiline,
@@ -420,17 +418,22 @@ class _AddActivitiesState extends State<AddActivities> {
                             maxLines: null,
                             textAlignVertical: TextAlignVertical.center,
                             decoration: InputDecoration(
-                              hintStyle: const TextStyle(fontSize: 16),
+                              hintStyle: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w400),
                               hintText:
                                   'Cth. Pastikan semua barang tidak ada yang tertinggal',
                               hintMaxLines: 3,
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(5),
+                                borderSide: const BorderSide(
+                                  color: Colors.grey,
+                                  width: 2,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(5),
                                 borderSide: const BorderSide(
-                                  color: Colors.black,
+                                  color: CustomColor.primary,
                                   width: 2,
                                 ),
                               ),

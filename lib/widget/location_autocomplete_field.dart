@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
 
+import '../resource/theme.dart';
+
 class LocationAutocompleteField extends StatefulWidget {
   final Function(String location, bool isCustom, {bool fromAutocomplete})
       onLocationChanged;
@@ -70,35 +72,49 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Lokasi",
-          style: TextStyle(
-            fontFamily: 'poppins_bold',
-            fontSize: 20,
-            color: Colors.black,
-          ),
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 6),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Switch(
-              value: isCustomLocation,
-              onChanged: (value) {
-                setState(() {
-                  isCustomLocation = value;
-                  widget.controller.clear();
-                  widget.onLocationChanged(
-                      '', value); // kosongkan saat ganti mode
-                });
-              },
-              activeColor: const Color(0xFF305A5A),
-            ),
             Text(
-              "Gunakan lokasi manual",
+              "Lokasi",
               style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade700,
+                color: CustomColor.blackColor,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    "Gunakan lokasi manual",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                    child: Transform.scale(
+                      scale: 0.7, // kecilin (0.7, 0.8, dll)
+                      child: Switch.adaptive(
+                        value: isCustomLocation,
+                        onChanged: (value) {
+                          setState(() {
+                            isCustomLocation = value;
+                            widget.controller.clear();
+                            widget.onLocationChanged(
+                                '', value); // kosongkan saat ganti mode
+                          });
+                        },
+                        activeColor: CustomColor.primaryColor700,
+                        inactiveTrackColor: Colors.grey.shade400,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -117,7 +133,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
       },
       decoration: InputDecoration(
         hintText: 'Contoh: Rumah Nenek, Rest Area KM 57',
-        hintStyle: const TextStyle(fontSize: 16),
+        hintStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
         suffixIcon: widget.controller.text.isNotEmpty
             ? IconButton(
                 icon: const Icon(Icons.clear),
@@ -128,16 +144,16 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
               )
             : null,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(5),
           borderSide: BorderSide(
             color: widget.isValid ? Colors.grey : Colors.red,
             width: 2,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(5),
           borderSide: BorderSide(
-            color: widget.isValid ? const Color(0xFF305A5A) : Colors.red,
+            color: widget.isValid ? CustomColor.primary : Colors.red,
             width: 2,
           ),
         ),
@@ -175,7 +191,8 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
           focusNode: focusNode,
           decoration: InputDecoration(
             hintText: 'Cth. Bandara Juanda, Monas, Hotel Majapahit',
-            hintStyle: const TextStyle(fontSize: 16),
+            hintStyle:
+                const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
             suffixIcon: widget.controller.text.isNotEmpty
                 ? IconButton(
                     icon: const Icon(Icons.clear),
@@ -187,16 +204,16 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
                   )
                 : null,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(5),
               borderSide: BorderSide(
                 color: widget.isValid ? Colors.grey : Colors.red,
                 width: 2,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(5),
               borderSide: BorderSide(
-                color: widget.isValid ? const Color(0xFF305A5A) : Colors.red,
+                color: widget.isValid ? CustomColor.primary : Colors.red,
                 width: 2,
               ),
             ),

@@ -254,7 +254,7 @@ class ActivityCard extends StatelessWidget {
                             ),
                           ),
                           if (!data.isCustomLocation) ...[
-                            VerticalDivider(),
+                            const VerticalDivider(),
                             InkWell(
                               onTap: () {
                                 Navigator.pop(context);
