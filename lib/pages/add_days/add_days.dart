@@ -211,12 +211,16 @@ class _AddDaysState extends State<AddDays> {
                             },
                             child: Card(
                               elevation: 4,
+                              color: CustomColor.primaryColor900,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(80),
                               ),
-                              child: const Padding(
-                                padding: EdgeInsets.all(1.0),
-                                child: Icon(Icons.add),
+                              child: Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Icon(
+                                  Icons.add,
+                                  color: CustomColor.whiteColor,
+                                ),
                               ),
                             ),
                           ),
@@ -440,10 +444,10 @@ class _AddDaysState extends State<AddDays> {
       child: Container(
         decoration: BoxDecoration(
           border: index == selectedDayIndex
-              ? const Border(
+              ? Border(
                   bottom: BorderSide(
                     width: 3.0,
-                    color: CustomColor.buttonColor,
+                    color: CustomColor.primaryColor600,
                   ),
                 )
               : null,
@@ -458,7 +462,7 @@ class _AddDaysState extends State<AddDays> {
                   fontWeight: FontWeight.bold,
                   fontFamily: 'poppins_bold',
                   color: index == selectedDayIndex
-                      ? CustomColor.buttonColor
+                      ? CustomColor.primaryColor600
                       : CustomColor.disabledColor,
                 ),
               ),
@@ -468,7 +472,7 @@ class _AddDaysState extends State<AddDays> {
                   fontSize: 12,
                   fontFamily: 'poppins_regular',
                   color: index == selectedDayIndex
-                      ? CustomColor.buttonColor
+                      ? CustomColor.primaryColor600
                       : CustomColor.disabledColor,
                 ),
               )
@@ -489,7 +493,6 @@ class _AddDaysState extends State<AddDays> {
         return "Desember";
     }
   }
-
 
   Future<AlertSaveDialogResult?> showAlertSaveDialog(BuildContext context) {
     return showDialog<AlertSaveDialogResult?>(

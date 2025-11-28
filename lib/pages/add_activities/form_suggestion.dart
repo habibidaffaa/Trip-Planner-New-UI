@@ -110,7 +110,7 @@ class FormSuggestionState extends State<FormSuggestion> {
                       PhysicalModel(
                         borderRadius: BorderRadius.circular(8),
                         color: Colors.white,
-                        elevation: 1.0,
+                        // elevation: 1.0,
                         shadowColor: CustomColor.subtitleTextColor,
                         child: DropdownButtonFormField<String>(
                           value: _selectedDepartureLocation,
@@ -199,7 +199,7 @@ class FormSuggestionState extends State<FormSuggestion> {
                       PhysicalModel(
                         borderRadius: BorderRadius.circular(8),
                         color: Colors.white,
-                        elevation: 1.0,
+                        // elevation: 1.0,
                         shadowColor: CustomColor.subtitleTextColor,
                         child: DropdownButtonFormField<String>(
                           value: _selectedDestinationLocation,

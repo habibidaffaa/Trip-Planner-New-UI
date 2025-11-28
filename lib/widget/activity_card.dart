@@ -389,6 +389,9 @@ class ActivityCard extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              const SizedBox(
+                                width: 20,
+                              )
                             ],
                           ),
                           const SizedBox(height: 4),

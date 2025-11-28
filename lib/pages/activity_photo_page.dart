@@ -194,23 +194,38 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: CustomColor.backgroundColor,
       appBar: AppBar(
-        backgroundColor: CustomColor.surface,
-        title: const Text(
-          "Foto Aktifitas",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: 'poppins_bold',
-            fontSize: 24,
-            fontWeight: FontWeight.normal,
-            color: Color(0xFFC58940),
+        backgroundColor: CustomColor.primaryColor500,
+        title: Text(
+          'Foto Aktivitas',
+          style: primaryTextStyle.copyWith(
+            fontWeight: semibold,
+            fontSize: 18,
+            // fontFamily: 'poppins_bold',
+            color: CustomColor.whiteColor,
+          ),
+          // itineraryProvider.itinerary.title,
+        ),
+        centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.all(3.0),
+          child: BackButton(
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: CustomColor.whiteColor,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
         ),
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.delete,
-              color: CustomColor.buttonColor,
+              color: CustomColor.whiteColor,
             ),
             tooltip: '',
             onPressed: () {
@@ -222,9 +237,8 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                           )));
             },
           ),
-          const Padding(
-            padding: EdgeInsets.only(
-                right: 20), // Tambahkan padding sesuai kebutuhan
+          const SizedBox(
+            width: 10,
           ),
         ],
       ),
@@ -236,89 +250,78 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
           log('Initial images: ${widget.activity.images}');
           await controller.loadImage();
         },
-        child: ListView(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Obx(() => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(
-                        height: 6,
-                      ),
-                      controller.isLoading.isTrue
-                          ? Container(
-                              alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Obx(() => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    height: 6,
+                  ),
+                  controller.isLoading.isTrue
+                      ? Container(
+                          alignment: Alignment.center,
+                          color: CustomColor.surface,
+                          child: SizedBox(
+                            width: 50,
+                            height: 50,
+                            child: LoadingAnimationWidget.discreteCircle(
                               color: CustomColor.surface,
-                              child: SizedBox(
-                                width: 50,
-                                height: 50,
-                                child: LoadingAnimationWidget.discreteCircle(
-                                  color: CustomColor.surface,
-                                  size: 200,
-                                ),
-                              ),
-                            )
-                          : controller.image.isNotEmpty
-                              ? MasonryView(
-                                  listOfItem: controller.image,
-                                  numberOfColumn: 2,
-                                  itemBuilder: (item) {
-                                    final file = item as File;
-                                    return GestureDetector(
-                                      onTap: () {
-                                        _showImageDialog(file);
-                                      },
-                                      onLongPress: () {
-                                        controller.showDeleteConfirmationDialog(
-                                            context, file);
-                                      },
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: Image.file(
-                                          file,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
+                              size: 200,
+                            ),
+                          ),
+                        )
+                      : controller.image.isNotEmpty
+                          ? MasonryView(
+                              listOfItem: controller.image,
+                              numberOfColumn: 2,
+                              itemBuilder: (item) {
+                                final file = item as File;
+                                return GestureDetector(
+                                  onTap: () {
+                                    _showImageDialog(file);
                                   },
-                                )
-                              : const Center(
-                                  child: Text(
-                                    "Tidak ada gambar yang ditampilkan",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontFamily: 'Montserrat',
-                                      color: Colors.black,
+                                  onLongPress: () {
+                                    controller.showDeleteConfirmationDialog(
+                                        context, file);
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Image.file(
+                                      file,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
+                                );
+                              },
+                            )
+                          : const Expanded(
+                              child: Center(
+                                child: Text(
+                                  "Tidak ada gambar yang ditampilkan",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: 'poppins',
+                                    color: Colors.black,
+                                  ),
                                 ),
-                    ],
-                  )),
-            ),
-          ],
+                              ),
+                            ),
+                ],
+              )),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: CustomColor.surface,
+        elevation: 2,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(100.0))),
+        backgroundColor: CustomColor.primary,
         onPressed: () async {
           await _saveCameraImage();
         },
-        elevation: 0, // Menghilangkan shadow
-        child: Container(
-          width: 56, // Lebar FloatingActionButton secara default adalah 56
-          height: 56, // Tinggi FloatingActionButton secara default juga 56
-          decoration: const BoxDecoration(
-            shape:
-                BoxShape.circle, // Membuat bentuk container menjadi lingkaran
-            image: DecorationImage(
-              image: AssetImage('assets/images/Logo_camera.png'),
-              fit: BoxFit
-                  .contain, // Menggunakan BoxFit.contain untuk memastikan gambar fit tapi tidak dipotong
-            ),
-          ),
-          alignment: Alignment.center, // Menjamin gambar berada di tengah
+        child: const Icon(
+          Icons.camera_enhance,
+          color: Colors.white,
         ),
       ),
     );

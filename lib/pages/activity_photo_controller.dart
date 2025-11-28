@@ -138,10 +138,10 @@ class PhotoController extends GetxController {
     var metadata = await Exif.fromPath(image.path);
     DateTime? photoDate = await metadata.getOriginalDate();
     String start = "${day[dateIndex].date} ${activity.startActivityTime}";
-    DateTime startTime = DateFormat("d/M/yyyy HH:mm").parse(start);
+    DateTime startTime = DateFormat("d/M/yyyy HH.mm").parse(start);
 
     String end = "${day[dateIndex].date} ${activity.endActivityTime}";
-    DateTime endTime = DateFormat("d/M/yyyy HH:mm").parse(end);
+    DateTime endTime = DateFormat("d/M/yyyy HH.mm").parse(end);
 
     DateTime activityStart = startTime;
     DateTime activityEnd = endTime;
