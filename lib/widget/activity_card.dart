@@ -16,6 +16,7 @@ class ActivityCard extends StatelessWidget {
   final void Function() onDismiss;
   final void Function() onUndo;
   final ScaffoldMessengerState snackbarHandler;
+
   const ActivityCard({
     super.key,
     required this.data,
@@ -29,11 +30,9 @@ class ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future<void> openGoogleMaps(String placeName) async {
-      // Encode nama tempat untuk URL
       String query = Uri.encodeComponent(placeName);
       String googleMapsUrl =
           "https://www.google.com/maps/search/?api=1&query=$query";
-
       final Uri url = Uri.parse(googleMapsUrl);
       if (await canLaunchUrl(url)) {
         await launchUrl(
@@ -85,12 +84,12 @@ class ActivityCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             titlePadding: EdgeInsets.zero,
+            contentPadding: EdgeInsets.zero,
             title: Container(
               alignment: Alignment.center,
               height: 118,
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
-                // color: CustomColor.primaryColor500,
                 image: DecorationImage(
                   image: AssetImage(
                     'assets/images/dialog_background.png',
@@ -112,232 +111,247 @@ class ActivityCard extends StatelessWidget {
                 ),
               ),
             ),
-            content: SingleChildScrollView(
+            content: SizedBox(
+              width: double.maxFinite,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    data.activityName,
-                    style: primaryTextStyle.copyWith(
-                      fontSize: 20,
-                      fontWeight: semibold,
-                      color: CustomColor.primaryColor900,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.place,
-                        color: CustomColor.subtitleTextColor,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Lokasi',
-                        style: primaryTextStyle.copyWith(
-                          fontSize: 12,
-                          fontWeight: semibold,
-                          color: CustomColor.subtitleTextColor,
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    data.lokasi,
-                    textAlign: TextAlign.left,
-                    style: primaryTextStyle.copyWith(
-                      fontSize: 14,
-                      fontWeight: regular,
-                      color: CustomColor.subtitleTextColor,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.watch_later,
-                        color: CustomColor.subtitleTextColor,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Waktu',
-                        style: primaryTextStyle.copyWith(
-                          fontSize: 12,
-                          fontWeight: semibold,
-                          color: CustomColor.subtitleTextColor,
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 4,
-                  ),
-                  Text(
-                    '${data.startActivityTime} - ${data.endActivityTime}',
-                    style: primaryTextStyle.copyWith(
-                      fontWeight: medium,
-                      fontSize: 16,
-                      color: CustomColor.subtitleTextColor,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.description,
-                        color: CustomColor.subtitleTextColor,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Keterangan',
-                        style: primaryTextStyle.copyWith(
-                          fontSize: 12,
-                          fontWeight: semibold,
-                          color: CustomColor.subtitleTextColor,
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    data.keterangan,
-                    style: primaryTextStyle.copyWith(
-                      fontWeight: regular,
-                      fontSize: 14,
-                      color: CustomColor.subtitleTextColor,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  IntrinsicHeight(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        // mainAxisAlignment: MainAxisAlignment.start,
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          InkWell(
-                            onTap: () {
-                              Navigator.pop(context);
-                              requestGalleryPermission(data);
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.perm_media,
-                                  color: CustomColor.primaryColor900,
-                                  size: 18,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  'Galeri',
-                                  style: primaryTextStyle.copyWith(
-                                    fontWeight: semibold,
-                                    fontSize: 16,
-                                    color: CustomColor.primaryColor900,
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            data.activityName,
+                            style: primaryTextStyle.copyWith(
+                              fontSize: 20,
+                              fontWeight: semibold,
+                              color: CustomColor.primaryColor900,
                             ),
                           ),
-                          if (!data.isCustomLocation) ...[
-                            const VerticalDivider(),
-                            InkWell(
-                              onTap: () {
-                                Navigator.pop(context);
-                                openGoogleMaps(data.lokasi);
-                              },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.map_outlined,
-                                    color: CustomColor.primaryColor900,
-                                    size: 18,
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.place,
+                                color: CustomColor.subtitleTextColor,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Lokasi',
+                                style: primaryTextStyle.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: semibold,
+                                  color: CustomColor.subtitleTextColor,
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            data.lokasi,
+                            textAlign: TextAlign.left,
+                            style: primaryTextStyle.copyWith(
+                              fontSize: 14,
+                              fontWeight: regular,
+                              color: CustomColor.subtitleTextColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.watch_later,
+                                color: CustomColor.subtitleTextColor,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Waktu',
+                                style: primaryTextStyle.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: semibold,
+                                  color: CustomColor.subtitleTextColor,
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${data.startActivityTime} - ${data.endActivityTime}',
+                            style: primaryTextStyle.copyWith(
+                              fontWeight: medium,
+                              fontSize: 16,
+                              color: CustomColor.subtitleTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.description,
+                                color: CustomColor.subtitleTextColor,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Keterangan',
+                                style: primaryTextStyle.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: semibold,
+                                  color: CustomColor.subtitleTextColor,
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            data.keterangan,
+                            style: primaryTextStyle.copyWith(
+                              fontWeight: regular,
+                              fontSize: 14,
+                              color: CustomColor.subtitleTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    decoration: BoxDecoration(
+                      color: CustomColor.whiteColor,
+                      border: Border(
+                        top: BorderSide(
+                          color: CustomColor.subtitleTextColor.withOpacity(0.2),
+                        ),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        IntrinsicHeight(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    requestGalleryPermission(data);
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.perm_media,
+                                        color: CustomColor.primaryColor900,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        'Galeri',
+                                        style: primaryTextStyle.copyWith(
+                                          fontWeight: semibold,
+                                          fontSize: 16,
+                                          color: CustomColor.primaryColor900,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    'Map',
-                                    style: primaryTextStyle.copyWith(
-                                      fontWeight: semibold,
-                                      fontSize: 16,
-                                      color: CustomColor.primaryColor900,
+                                ),
+                                if (!data.isCustomLocation) ...[
+                                  const VerticalDivider(),
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      openGoogleMaps(data.lokasi);
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.map_outlined,
+                                          color: CustomColor.primaryColor900,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          'Map',
+                                          style: primaryTextStyle.copyWith(
+                                            fontWeight: semibold,
+                                            fontSize: 16,
+                                            color: CustomColor.primaryColor900,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        InkWell(
+                          customBorder: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return AddActivities(
+                                    initialActivity: data,
+                                    onSubmit: (newActivity) {
+                                      context
+                                          .read<ItineraryProvider>()
+                                          .updateActivity(
+                                            updatedDayIndex: selectedDayIndex,
+                                            updatedActivityIndex: activityIndex,
+                                            newActivity: newActivity,
+                                          );
+                                    },
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          child: Container(
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: CustomColor.primaryColor500,
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(100.0),
                               ),
                             ),
-                          ],
-                        ],
-                      ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Edit Aktivitas',
+                              style: primaryTextStyle.copyWith(
+                                fontWeight: semibold,
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            actions: [
-              const SizedBox(
-                height: 8,
-              ),
-              InkWell(
-                customBorder: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                onTap: () {
-                  Navigator.of(context).pop(); // Tutup dialog
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return AddActivities(
-                          initialActivity: data,
-                          onSubmit: (newActivity) {
-                            context.read<ItineraryProvider>().updateActivity(
-                                  updatedDayIndex: selectedDayIndex,
-                                  updatedActivityIndex: activityIndex,
-                                  newActivity: newActivity,
-                                );
-                          },
-                        );
-                      },
-                    ),
-                  );
-                },
-                child: Container(
-                  height: 50,
-                  // width: 270,
-                  decoration: BoxDecoration(
-                    color: CustomColor.primaryColor500,
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(100.0),
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Edit Aktivitas',
-                    style: primaryTextStyle.copyWith(
-                      fontWeight: semibold,
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            actions: const [],
           );
         },
       );
@@ -353,143 +367,159 @@ class ActivityCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: CustomColor.primaryColor50,
               borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Stack(
-              alignment: Alignment.topRight,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Container(
+                color: CustomColor.primaryColor50,
+                child: Stack(
+                  alignment: Alignment.topRight,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                const IconData(0xe055,
-                                    fontFamily: 'MaterialIcons'),
-                                color: CustomColor.subtitleTextColor,
-                                size: 15,
-                              ),
-                              const SizedBox(width: 9),
-                              Expanded(
-                                child: Text(
-                                  data.lokasi,
-                                  textAlign: TextAlign.left,
-                                  style: primaryTextStyle.copyWith(
-                                    fontSize: 14,
-                                    fontWeight: semibold,
-                                    color: CustomColor.subtitleTextColor,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 20,
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            data.activityName,
-                            textAlign: TextAlign.left,
-                            style: primaryTextStyle.copyWith(
-                              fontSize: 20,
-                              fontWeight: semibold,
-                              color: CustomColor.primaryColor900,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
                                 children: [
-                                  Text(
-                                    'MULAI',
-                                    style: primaryTextStyle.copyWith(
-                                      fontWeight: regular,
-                                      fontSize: 12,
-                                      color: CustomColor.subtitleTextColor,
-                                    ),
+                                  Icon(
+                                    const IconData(0xe055,
+                                        fontFamily: 'MaterialIcons'),
+                                    color: CustomColor.subtitleTextColor,
+                                    size: 15,
                                   ),
-                                  Text(
-                                    data.startActivityTime,
-                                    style: primaryTextStyle.copyWith(
-                                      fontWeight: regular,
-                                      fontSize: 16,
-                                      color: CustomColor.subtitleTextColor,
+                                  const SizedBox(width: 9),
+                                  Expanded(
+                                    child: Text(
+                                      data.lokasi,
+                                      textAlign: TextAlign.left,
+                                      style: primaryTextStyle.copyWith(
+                                        fontSize: 14,
+                                        fontWeight: semibold,
+                                        color: CustomColor.subtitleTextColor,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
-                              Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 4,
+                              const SizedBox(height: 4),
+                              Text(
+                                data.activityName,
+                                textAlign: TextAlign.left,
+                                style: primaryTextStyle.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: semibold,
+                                  color: CustomColor.primaryColor900,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: CustomColor.primaryColor300,
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.circular(50.0),
-                                  ),
-                                ),
-                                child: Text(
-                                  '${AppHelper.calculateDurationInMinutes(data.startActivityTime, data.endActivityTime)} Mins',
-                                  style: primaryTextStyle.copyWith(
-                                    fontWeight: semibold,
-                                    color: CustomColor.whiteColor,
-                                    fontSize: 10,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'SELESAI',
-                                    style: primaryTextStyle.copyWith(
-                                      fontWeight: regular,
-                                      fontSize: 12,
-                                      color: CustomColor.subtitleTextColor,
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'MULAI',
+                                        style: primaryTextStyle.copyWith(
+                                          fontWeight: regular,
+                                          fontSize: 12,
+                                          color: CustomColor.subtitleTextColor,
+                                        ),
+                                      ),
+                                      Text(
+                                        data.startActivityTime,
+                                        style: primaryTextStyle.copyWith(
+                                          fontWeight: regular,
+                                          fontSize: 16,
+                                          color: CustomColor.subtitleTextColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 20),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: CustomColor.primaryColor300,
+                                      borderRadius: const BorderRadius.all(
+                                        Radius.circular(50.0),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '${AppHelper.calculateDurationInMinutes(data.startActivityTime, data.endActivityTime)} Mins',
+                                      style: primaryTextStyle.copyWith(
+                                        fontWeight: semibold,
+                                        color: CustomColor.primaryColor900,
+                                        fontSize: 10,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  Text(
-                                    data.endActivityTime,
-                                    style: primaryTextStyle.copyWith(
-                                      fontWeight: regular,
-                                      fontSize: 16,
-                                      color: CustomColor.subtitleTextColor,
-                                    ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'SELESAI',
+                                        style: primaryTextStyle.copyWith(
+                                          fontWeight: regular,
+                                          fontSize: 12,
+                                          color: CustomColor.subtitleTextColor,
+                                        ),
+                                      ),
+                                      Text(
+                                        data.endActivityTime,
+                                        style: primaryTextStyle.copyWith(
+                                          fontWeight: regular,
+                                          fontSize: 16,
+                                          color: CustomColor.subtitleTextColor,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
 
-        // Ikon Delete (menggantikan Dismissible)
+        // Ikon Delete
         Positioned(
           top: 8,
           right: 8,
@@ -497,7 +527,6 @@ class ActivityCard extends StatelessWidget {
             onTap: () {
               snackbarHandler.removeCurrentSnackBar();
               onDismiss();
-
               snackbarHandler.showSnackBar(
                 SnackBar(
                   content: const Text("Item dihapus!"),

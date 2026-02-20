@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart'; // Tambahkan package ini
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:iterasi1/model/itinerary.dart';
 import 'package:iterasi1/pages/add_activities/suggestion_page.dart';
@@ -18,29 +21,48 @@ class FormSuggestion extends StatefulWidget {
 }
 
 class FormSuggestionState extends State<FormSuggestion> {
-  // Daftar lokasi statis untuk dropdown
-  final List<String> _locations = [
-    "Surabaya",
-    "Mojokerto",
-    "Malang",
-    "Kediri",
-    "Blitar",
-    "Pacitan",
-    "Banyuwangi",
-    "Probolinggo",
-    "Jember",
-    "Lumajang",
-  ];
+  final TextEditingController _departureController = TextEditingController();
+  final TextEditingController _destinationController = TextEditingController();
 
-  String? _selectedDepartureLocation; // Lokasi Berangkat terpilih
-  String? _selectedDestinationLocation; // Lokasi Tujuan terpilih
+
+  final String _googleMapsApiKey = 'AIzaSyCe96AAiABekFCX0Dq5kIsKDUAK6bhtIwg';
+
+  // Fungsi untuk mengambil saran dari Google Maps API
+  Future<List<Map<String, dynamic>>> _getSuggestions(String query) async {
+    if (query.isEmpty) return [];
+
+    final url =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&key=$_googleMapsApiKey&components=country:id';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final predictions = json.decode(response.body)['predictions'] as List;
+        return predictions.map<Map<String, dynamic>>((p) {
+          return {
+            'description': p['description'],
+            'place_id': p['place_id'],
+          };
+        }).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  void dispose() {
+    _departureController.dispose();
+    _destinationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: CustomColor.whiteColor,
       appBar: AppBar(
-        // toolbarHeight: 118,
         backgroundColor: CustomColor.primaryColor500,
         title: Column(
           children: [
@@ -49,19 +71,15 @@ class FormSuggestionState extends State<FormSuggestion> {
               style: primaryTextStyle.copyWith(
                 fontWeight: semibold,
                 fontSize: 18,
-                // fontFamily: 'poppins_bold',
                 color: CustomColor.whiteColor,
               ),
-              // itineraryProvider.itinerary.title,
             ),
             Text(
               '${DateFormat('dd MMM').format(widget.selectedDays.first)} - ${DateFormat('dd MMM').format(widget.selectedDays.last)}',
               style: primaryTextStyle.copyWith(
                 fontSize: 14,
-                // fontFamily: 'poppins_bold',
                 color: CustomColor.whiteColor,
               ),
-              // itineraryProvider.itinerary.title,
             ),
           ],
         ),
@@ -81,7 +99,6 @@ class FormSuggestionState extends State<FormSuggestion> {
         elevation: 0,
       ),
       body: Container(
-        // margin: const EdgeInsets.only(bottom: 20),
         padding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 20,
@@ -94,302 +111,170 @@ class FormSuggestionState extends State<FormSuggestion> {
                 physics: const BouncingScrollPhysics(),
                 scrollDirection: Axis.vertical,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Lokasi Berangkat",
-                        style: primaryTextStyle.copyWith(
-                          // fontFamily: 'poppins_bold',
-                          // fontWeight: semibold,
-                          fontSize: 14,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      PhysicalModel(
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.white,
-                        // elevation: 1.0,
-                        shadowColor: CustomColor.subtitleTextColor,
-                        child: DropdownButtonFormField<String>(
-                          value: _selectedDepartureLocation,
-                          isExpanded: true,
-                          hint: Text(
-                            'Pilih Lokasi Berangkat',
-                            style: primaryTextStyle.copyWith(
-                              color: CustomColor.subtitleTextColor,
-                              // fontWeight: semibold,
-                              fontSize: 12,
-                            ),
-                          ),
-                          style: primaryTextStyle.copyWith(
-                            fontWeight: semibold,
-                          ),
-                          dropdownColor: CustomColor.whiteColor,
-                          items: _locations
-                              .map(
-                                (location) => DropdownMenuItem<String>(
-                                  value: location,
-                                  child: Text(
-                                    location,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: primaryTextStyle.copyWith(
-                                      fontSize: 12,
-                                      // fontWeight: semibold,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            setState(
-                              () {
-                                _selectedDepartureLocation = value;
-                              },
-                            );
-                          },
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: CustomColor.whiteColor,
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: CustomColor.subtitleTextColor,
-                                width: 0.5,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: CustomColor.primaryColor600,
-                                width: 1,
-                              ),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: CustomColor.subtitleTextColor,
-                                width: 0.5,
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  // --- INPUT LOKASI BERANGKAT ---
+                  _buildInputLabel("Lokasi Berangkat"),
+                  const SizedBox(height: 10),
+                  _buildAutocompleteField(
+                      _departureController, 'Masukkan Lokasi Berangkat'),
+
                   const SizedBox(height: 20),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Lokasi Berangkat",
-                        style: primaryTextStyle.copyWith(
-                          // fontFamily: 'poppins_bold',
-                          // fontWeight: semibold,
-                          fontSize: 14,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      PhysicalModel(
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.white,
-                        // elevation: 1.0,
-                        shadowColor: CustomColor.subtitleTextColor,
-                        child: DropdownButtonFormField<String>(
-                          value: _selectedDestinationLocation,
-                          isExpanded: true,
-                          hint: Text(
-                            'Pilih Lokasi Tujuan',
-                            style: primaryTextStyle.copyWith(
-                              color: CustomColor.subtitleTextColor,
-                              // fontWeight: semibold,
-                              fontSize: 12,
-                            ),
-                          ),
-                          style: primaryTextStyle.copyWith(
-                            fontWeight: semibold,
-                          ),
-                          dropdownColor: CustomColor.whiteColor,
-                          items: _locations
-                              .map(
-                                (location) => DropdownMenuItem<String>(
-                                  value: location,
-                                  child: Text(
-                                    location,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: primaryTextStyle.copyWith(
-                                      fontSize: 12,
-                                      // fontWeight: semibold,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            setState(
-                              () {
-                                _selectedDestinationLocation = value;
-                              },
-                            );
-                          },
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: CustomColor.whiteColor,
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: CustomColor.subtitleTextColor,
-                                width: 0.5,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: CustomColor.primaryColor600,
-                                width: 1,
-                              ),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: CustomColor.subtitleTextColor,
-                                width: 0.5,
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 40,
-                  ),
-                  InkWell(
-                    onTap: (_selectedDepartureLocation != null &&
-                            _selectedDestinationLocation != null)
-                        ? (_selectedDepartureLocation != null &&
-                                _selectedDestinationLocation != null)
-                            ? () async {
-                                LoadingOverlay.show(context);
-                                List<Itinerary> results = await context
-                                    .read<ItineraryProvider>()
-                                    .generateItineraryByAi(
-                                      departure: _selectedDepartureLocation!,
-                                      destination:
-                                          _selectedDestinationLocation!,
-                                      dates: widget.selectedDays,
-                                    )
-                                    .catchError((err) {
-                                  LoadingOverlay.hide();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        err.toString(),
-                                      ),
-                                    ),
-                                  );
-                                });
 
-                                LoadingOverlay.hide();
-                                Navigator.pop(context);
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => SuggestionPage(
-                                      itineraries: results,
-                                      // selectedDays: widget.selectedDays,
-                                    ),
-                                  ),
-                                );
-                              }
-                            : null
-                        : null,
-                    child: Container(
-                      height: 50,
-                      // width: 270,
-                      decoration: BoxDecoration(
-                        color: CustomColor.primaryColor500,
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(100.0),
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "SUBMIT",
-                        style: primaryTextStyle.copyWith(
-                          color: CustomColor.whiteColor,
-                          fontWeight: semibold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // TextButton(
-                  //   style: TextButton.styleFrom(
-                  //     backgroundColor: !_isLoading
-                  //         ? (_selectedDepartureLocation != null &&
-                  //                 _selectedDestinationLocation != null)
-                  //             ? CustomColor.buttonColor
-                  //             : Colors.grey
-                  //         : Colors.grey,
-                  //     shape: RoundedRectangleBorder(
-                  //       borderRadius: BorderRadius.circular(12),
-                  //     ),
-                  //     minimumSize: const Size(double.infinity, 60),
-                  //   ),
-                  //   onPressed: !_isLoading
-                  //       ? (_selectedDepartureLocation != null &&
-                  //               _selectedDestinationLocation != null)
-                  //           ? () async {
-                  //               setState(() {
-                  //                 _isLoading = true;
-                  //               });
-                  //               List<Itinerary> results = await context
-                  //                   .read<ItineraryProvider>()
-                  //                   .generateItineraryByAi(
-                  //                     departure: _selectedDepartureLocation!,
-                  //                     destination:
-                  //                         _selectedDestinationLocation!,
-                  //                     dates: widget.selectedDays,
-                  //                   );
+                  // --- INPUT LOKASI TUJUAN ---
+                  _buildInputLabel("Lokasi Tujuan"),
+                  const SizedBox(height: 10),
+                  _buildAutocompleteField(
+                      _destinationController, 'Masukkan Lokasi Tujuan'),
 
-                  //               setState(() {
-                  //                 _isLoading = false;
-                  //               });
-                  //               Navigator.pop(context);
-                  //               Navigator.of(context).push(
-                  //                 MaterialPageRoute(
-                  //                   builder: (context) => SuggestionPage(
-                  //                     itineraries: results,
-                  //                     // selectedDays: widget.selectedDays,
-                  //                   ),
-                  //                 ),
-                  //               );
-                  //             }
-                  //           : null
-                  //       : null,
-                  //   child: Text(
-                  //     !_isLoading ? 'Submit' : "Loading",
-                  //     style: const TextStyle(
-                  //       fontFamily: 'poppins_bold',
-                  //       fontSize: 20,
-                  //       color: Color(0xFFFFFFFF),
-                  //     ),
-                  //   ),
-                  // ),
+                  const SizedBox(height: 40),
+
+                  // --- TOMBOL SUBMIT ---
+                  _buildSubmitButton(),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Widget Label agar code lebih bersih
+  Widget _buildInputLabel(String label) {
+    return Text(
+      label,
+      style: primaryTextStyle.copyWith(
+        fontSize: 14,
+        color: Colors.black,
+      ),
+    );
+  }
+
+  // Widget Autocomplete yang mengadopsi dekorasi asli Anda
+  Widget _buildAutocompleteField(
+      TextEditingController controller, String hint) {
+    return PhysicalModel(
+      borderRadius: BorderRadius.circular(8),
+      color: Colors.white,
+      shadowColor: CustomColor.subtitleTextColor,
+      child: TypeAheadField<Map<String, dynamic>>(
+        controller: controller,
+        suggestionsCallback: _getSuggestions,
+        itemBuilder: (context, suggestion) {
+          return ListTile(
+            title: Text(
+              suggestion['description'],
+              style: primaryTextStyle.copyWith(fontSize: 12),
+            ),
+          );
+        },
+        onSelected: (suggestion) {
+          setState(() {
+            controller.text = suggestion['description'];
+          });
+        },
+        // Bagian builder ini memungkinkan kita menggunakan dekorasi asli Anda
+        builder: (context, child, focusNode) {
+          return TextField(
+            controller: controller,
+            focusNode: focusNode,
+            onChanged: (value) => setState(() {}),
+            style: primaryTextStyle.copyWith(
+              fontWeight: semibold,
+              fontSize: 12,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: primaryTextStyle.copyWith(
+                color: CustomColor.subtitleTextColor,
+                fontSize: 12,
+              ),
+              filled: true,
+              fillColor: CustomColor.whiteColor,
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: CustomColor.subtitleTextColor,
+                  width: 0.5,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: CustomColor.primaryColor600,
+                  width: 1,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              suffixIcon: controller.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 18),
+                      onPressed: () {
+                        setState(() {
+                          controller.clear();
+                        });
+                      },
+                    )
+                  : null,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    bool isFormValid = _departureController.text.isNotEmpty &&
+        _destinationController.text.isNotEmpty;
+
+    return InkWell(
+      onTap: isFormValid
+          ? () async {
+              LoadingOverlay.show(context);
+              try {
+                List<Itinerary> results = await context
+                    .read<ItineraryProvider>()
+                    .generateItineraryByAi(
+                      departure: _departureController.text,
+                      destination: _destinationController.text,
+                      dates: widget.selectedDays,
+                    );
+
+                LoadingOverlay.hide();
+                if (mounted) {
+                  Navigator.pop(context);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => SuggestionPage(
+                        itineraries: results,
+                      ),
+                    ),
+                  );
+                }
+              } catch (err) {
+                LoadingOverlay.hide();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(err.toString())),
+                );
+              }
+            }
+          : null,
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: isFormValid ? CustomColor.primaryColor500 : Colors.grey,
+          borderRadius: const BorderRadius.all(Radius.circular(100.0)),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          "SUBMIT",
+          style: primaryTextStyle.copyWith(
+            color: CustomColor.whiteColor,
+            fontWeight: semibold,
+            fontSize: 16,
+          ),
         ),
       ),
     );
