@@ -23,6 +23,7 @@ class ItineraryService {
         Untuk outputnya harus memperhatikan aturan berikut:
         - wajib menggunakan bahasa indonesia
         - tanggal pada field date harus dalam format 'DD/MM/YYYY'
+        - PENTING: Setiap tanggal hanya boleh muncul SATU KALI dalam array itinerary. Jika ada aktivitas di tanggal yang sama, gabungkan semua aktivitas tersebut dalam satu entry date.
         - Untuk aktivitas di tempat wisata, sertakan `latitude` dan `longitude` (contoh: Kebun Binatang Surabaya 7.2962, 112.7366)
         - Untuk aktivitas seperti check-in hotel atau perjalanan, isi `latitude` dan `longitude` dengan `null`
         - Untuk `lokasi` pada aktivitas wajib menggunakan alamat lengkap nama tempat tersebut dengan format (nama tempat, kota)

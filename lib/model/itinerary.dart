@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:uuid/uuid.dart';
 
+import 'activity.dart';
 import 'day.dart';
 
 class Itinerary {
@@ -28,9 +29,31 @@ class Itinerary {
   }
 
   factory Itinerary.fromJsonGPT(Map<String, dynamic> json) {
-    List<Day> days = (json['itinerary'] as List)
-        .map((dayJson) => Day.fromJsonGPT(dayJson))
-        .toList();
+    // Parse days dan gabungkan aktivitas dengan tanggal yang sama
+    final Map<String, List<Activity>> activitiesByDate = {};
+    
+    for (var dayJson in json['itinerary'] as List) {
+      final date = dayJson['date'] as String;
+      final activities = (dayJson['activities'] as List)
+          .map((activityJson) => Activity.fromJsonGPT(activityJson))
+          .toList();
+      
+      if (activitiesByDate.containsKey(date)) {
+        // Gabungkan aktivitas jika tanggal sudah ada
+        activitiesByDate[date]!.addAll(activities);
+      } else {
+        activitiesByDate[date] = activities;
+      }
+    }
+    
+    // Buat list Day dari map yang sudah digabung
+    List<Day> days = activitiesByDate.entries.map((entry) {
+      return Day(date: entry.key, activities: entry.value);
+    }).toList();
+    
+    // Sort days berdasarkan tanggal
+    days.sort((a, b) => a.getDatetime().compareTo(b.getDatetime()));
+    
     return Itinerary(
       title: 'HASIL ',
       days: days,
