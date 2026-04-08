@@ -41,6 +41,47 @@ class _AddDaysState extends State<AddDays> {
   late List<Widget> actionIcon;
 
   late ScaffoldMessengerState snackbarHandler;
+  String _pendingTitle = '';
+
+  void _submitItineraryTitle(String newTitle) {
+    final trimmedTitle = newTitle.trim();
+    if (trimmedTitle.isEmpty) {
+      snackbarHandler
+        ..removeCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Judul itinerary tidak boleh kosong')),
+        );
+      return;
+    }
+
+    itineraryProvider.setNewItineraryTitle(trimmedTitle, shouldNotify: true);
+    _pendingTitle = trimmedTitle;
+    setState(() {
+      isEditing = false;
+    });
+  }
+
+  bool _commitPendingTitleIfAny() {
+    if (!isEditing) {
+      return true;
+    }
+
+    final trimmedTitle = _pendingTitle.trim();
+    if (trimmedTitle.isEmpty) {
+      snackbarHandler
+        ..removeCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Judul itinerary tidak boleh kosong')),
+        );
+      return false;
+    }
+
+    itineraryProvider.setNewItineraryTitle(trimmedTitle, shouldNotify: true);
+    setState(() {
+      isEditing = false;
+    });
+    return true;
+  }
 
 // Fungsi untuk meminta permission galeri dan navigasi jika izin diberikan
   Future<void> requestGalleryPermission(Activity activity) async {
@@ -85,17 +126,10 @@ class _AddDaysState extends State<AddDays> {
 
     if (isEditing) {
       appBarTitle = SearchField(
-        initialText: itineraryProvider.itinerary.title,
-        onSubmit: (String newTitle) {
-          setState(
-            () {
-              itineraryProvider.setNewItineraryTitle(newTitle);
-              isEditing = false;
-            },
-          );
-        },
+        initialText: _pendingTitle,
+        onSubmit: _submitItineraryTitle,
         onValueChange: (newTitle) {
-          itineraryProvider.setNewItineraryTitle(newTitle);
+          _pendingTitle = newTitle;
         },
       );
 
@@ -113,6 +147,7 @@ class _AddDaysState extends State<AddDays> {
           onPressed: () {
             setState(
               () {
+                _pendingTitle = itineraryProvider.itinerary.title;
                 isEditing = true;
               },
             );
@@ -391,7 +426,7 @@ class _AddDaysState extends State<AddDays> {
                         width: 5,
                       ),
                       InkWell(
-                        onTap: saveCurrentItinerary,
+                        onTap: saveAndExit,
                         customBorder: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(100),
                         ),
@@ -618,20 +653,45 @@ class _AddDaysState extends State<AddDays> {
     );
   }
 
-  Future<void> saveCurrentItinerary() {
+  Future<bool> persistCurrentItinerary() async {
+    FocusScope.of(context).unfocus();
+    if (!_commitPendingTitleIfAny()) {
+      return false;
+    }
+
     context.loaderOverlay.show();
-    return databaseProvider
-        .insertItinerary(itinerary: itineraryProvider.itinerary)
-        .whenComplete(
-      () {
-        Navigator.popUntil(context, ModalRoute.withName(ItineraryList.route));
+    try {
+      await databaseProvider.insertItinerary(
+          itinerary: itineraryProvider.itinerary);
+      itineraryProvider.syncInitialItinerary();
+      return true;
+    } catch (_) {
+      snackbarHandler
+        ..removeCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+              content: Text('Gagal menyimpan itinerary. Coba lagi.')),
+        );
+      return false;
+    } finally {
+      if (mounted) {
         context.loaderOverlay.hide();
-      },
-    );
+      }
+    }
+  }
+
+  Future<void> saveAndExit() async {
+    final didPersist = await persistCurrentItinerary();
+    if (!didPersist || !mounted) {
+      return;
+    }
+    Navigator.popUntil(context, ModalRoute.withName(ItineraryList.route));
   }
 
   Future<bool> handleBackBehaviour() async {
-    if (itineraryProvider.isDataChanged) {
+    final hasPendingTitleChange =
+        isEditing && _pendingTitle.trim() != itineraryProvider.itinerary.title;
+    if (itineraryProvider.isDataChanged || hasPendingTitleChange) {
       final resultSaveDialog = await showAlertSaveDialog(context);
 
       late bool shouldPop;
@@ -639,8 +699,8 @@ class _AddDaysState extends State<AddDays> {
       if (resultSaveDialog == AlertSaveDialogResult.saveWithoutQuit) {
         shouldPop = true;
       } else if (resultSaveDialog == AlertSaveDialogResult.saveAndQuit) {
-        await saveCurrentItinerary();
-        shouldPop = true;
+        await saveAndExit();
+        shouldPop = false;
       } else {
         shouldPop = false;
       }

@@ -15,7 +15,8 @@ class Activity {
   List<String>? images; // Nullable List<String>
   List<String>? removedImages; // Nullable List<String>
 
-  static final _formatter = DateFormat('HH.mm', 'id_ID');
+  static final _formatter24 = DateFormat('HH.mm', 'id_ID');
+  static final _formatter12 = DateFormat('h:mm a', 'en_US');
 
   Activity({
     String? id,
@@ -118,20 +119,31 @@ class Activity {
         keterangan: keterangan ?? this.keterangan,
         isCustomLocation: isCustomLocation ?? this.isCustomLocation,
         latitude: latitude ?? this.latitude,
-        longtitude: keterangan ?? this.keterangan,
-        images: images ??
-            this.images, // Set images ke nilai yang diberikan atau biarkan seperti sebelumnya jika null
-        removedImages: removedImages ??
-            this.removedImages, // Set images ke nilai yang diberikan atau biarkan seperti sebelumnya jika null
+        longtitude: longtitude ?? this.longtitude,
+        images: images ?? List<String>.from(this.images ?? []),
+        removedImages:
+            removedImages ?? List<String>.from(this.removedImages ?? []),
       );
 
-  TimeOfDay get startTimeOfDay =>
-      TimeOfDay.fromDateTime(_formatter.parse(startActivityTime));
+  TimeOfDay get startTimeOfDay => _parseTimeOfDay(startActivityTime);
 
-  TimeOfDay get endTimeOfDay =>
-      TimeOfDay.fromDateTime(_formatter.parse(endActivityTime));
+  TimeOfDay get endTimeOfDay => _parseTimeOfDay(endActivityTime);
 
-  DateTime get startDateTime => _formatter.parse(startActivityTime);
+  DateTime get startDateTime => _parseDateTime(startActivityTime);
 
-  DateTime get endDateTime => _formatter.parse(endActivityTime);
+  DateTime get endDateTime => _parseDateTime(endActivityTime);
+
+  DateTime _parseDateTime(String rawValue) {
+    final normalized = rawValue.trim();
+    try {
+      return _formatter24.parseStrict(normalized);
+    } catch (_) {
+      return _formatter12.parseStrict(normalized.toUpperCase());
+    }
+  }
+
+  TimeOfDay _parseTimeOfDay(String rawValue) {
+    final dateTime = _parseDateTime(rawValue);
+    return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+  }
 }

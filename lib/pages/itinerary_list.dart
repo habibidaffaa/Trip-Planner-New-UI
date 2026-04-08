@@ -26,12 +26,10 @@ class ItineraryList extends StatefulWidget {
 class _ItineraryListState extends State<ItineraryList> {
   late ScaffoldMessengerState snackbarHandler;
   TextEditingController searchController = TextEditingController();
-  late DatabaseProvider dbProvider;
 
   @override
   void initState() {
     super.initState();
-    dbProvider = Provider.of<DatabaseProvider>(context, listen: false);
   }
 
   @override
@@ -41,9 +39,9 @@ class _ItineraryListState extends State<ItineraryList> {
   }
 
   void _refreshData() {
-    setState(() {
-      dbProvider.refreshData(filterItineraryName: searchController.text);
-    });
+    context
+        .read<DatabaseProvider>()
+        .refreshData(filterItineraryName: searchController.text);
   }
 
   void _unfocusTextField() {
@@ -52,6 +50,7 @@ class _ItineraryListState extends State<ItineraryList> {
 
   @override
   Widget build(BuildContext context) {
+    final dbProvider = context.watch<DatabaseProvider>();
     snackbarHandler = ScaffoldMessenger.of(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(

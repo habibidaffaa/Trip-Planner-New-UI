@@ -45,16 +45,17 @@ class _AddActivitiesState extends State<AddActivities> {
 
   @override
   void initState() {
+    super.initState();
     if (widget.initialActivity != null) {
       titleController.text = widget.initialActivity!.activityName;
       lokasiController.text = widget.initialActivity!.lokasi;
       keteranganController.text = widget.initialActivity!.keterangan;
       _selectedStartTime = widget.initialActivity!.startTimeOfDay;
       _isCustomLocation = widget.initialActivity!.isCustomLocation;
+      _isFromAutocomplete = !_isCustomLocation;
       print('start time : $_selectedStartTime');
       _selectedEndTime = widget.initialActivity!.endTimeOfDay;
       print('end time : $_selectedEndTime');
-      super.initState();
     }
     titleController.addListener(() {
       _validateTitle(showMessage: true);
@@ -121,17 +122,37 @@ class _AddActivitiesState extends State<AddActivities> {
   }
 
   void _submitActivity() {
+    if (!_isEndTimeValid || !_isTitleValid || !_isLokasiValid) {
+      return;
+    }
+
+    final locale = MaterialLocalizations.of(context);
     final newActivity = Activity(
+      id: widget.initialActivity?.id,
       activityName: titleController.text,
       lokasi: lokasiController.text,
-      startActivityTime: _selectedStartTime.format(context),
-      endActivityTime: _selectedEndTime.format(context),
+      startActivityTime: locale
+          .formatTimeOfDay(
+            _selectedStartTime,
+            alwaysUse24HourFormat: true,
+          )
+          .replaceAll(':', '.'),
+      endActivityTime: locale
+          .formatTimeOfDay(
+            _selectedEndTime,
+            alwaysUse24HourFormat: true,
+          )
+          .replaceAll(':', '.'),
       keterangan: keteranganController.text,
-      removedImages: widget.initialActivity?.removedImages,
+      images: List<String>.from(widget.initialActivity?.images ?? []),
+      removedImages:
+          List<String>.from(widget.initialActivity?.removedImages ?? []),
       isCustomLocation: _isCustomLocation,
+      latitude: widget.initialActivity?.latitude,
+      longtitude: widget.initialActivity?.longtitude,
     );
 
-    log(_selectedStartTime.format(context));
+    log(newActivity.startActivityTime);
     log(newActivity.toJson().toString());
 
     widget.onSubmit(newActivity);

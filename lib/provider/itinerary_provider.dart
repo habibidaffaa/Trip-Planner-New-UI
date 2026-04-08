@@ -25,8 +25,16 @@ class ItineraryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setNewItineraryTitle(String newTitle) {
+  void syncInitialItinerary() {
+    initialItinerary = _itinerary.copy();
+    notifyListeners();
+  }
+
+  void setNewItineraryTitle(String newTitle, {bool shouldNotify = false}) {
     _itinerary.title = newTitle;
+    if (shouldNotify) {
+      notifyListeners();
+    }
   }
 
   void addDay(Day newDay) {

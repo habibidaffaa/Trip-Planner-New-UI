@@ -20,6 +20,10 @@ class SearchField extends StatefulWidget {
 class _SearchFieldState extends State<SearchField> {
   late TextEditingController controller;
 
+  void _submitTitle() {
+    widget.onSubmit(controller.text.trim());
+  }
+
   @override
   void dispose() {
     controller.dispose();
@@ -38,7 +42,8 @@ class _SearchFieldState extends State<SearchField> {
       textInputAction: TextInputAction.done,
       controller: controller,
       onChanged: widget.onValueChange,
-      onSubmitted: widget.onSubmit,
+      onSubmitted: (_) => _submitTitle(),
+      onEditingComplete: _submitTitle,
       style: primaryTextStyle.copyWith(
         fontWeight: semibold,
         color: Colors.white,
@@ -48,9 +53,9 @@ class _SearchFieldState extends State<SearchField> {
         contentPadding: EdgeInsets.zero,
         suffixIcon: IconButton(
             onPressed: () {
-              widget.onSubmit(controller.text);
+              _submitTitle();
             },
-            icon: const Icon(Icons.close, color: Colors.white)),
+            icon: const Icon(Icons.check, color: Colors.white)),
         border: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.white)),
         focusedBorder: const UnderlineInputBorder(
