@@ -3,10 +3,12 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masonry_view/flutter_masonry_view.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:iterasi1/model/activity.dart';
 import 'package:iterasi1/pages/activity_photo_controller.dart';
 import 'package:iterasi1/pages/activity_trash_photo_page.dart';
@@ -34,6 +36,9 @@ class ActivityPhotoPage extends StatefulWidget {
 
 class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
   final controller = Get.put(PhotoController());
+  final _fileNameFormatter = DateFormat('yyyyMMdd_HHmmss');
+  static const MethodChannel _mediaScannerChannel =
+      MethodChannel('trip_planner/media_scanner');
 
   late ItineraryProvider itineraryProvider =
       Provider.of<ItineraryProvider>(context, listen: false);
@@ -56,6 +61,44 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
     }
   }
 
+  String _buildFileName(String sourcePath) {
+    final String extension = path_lib.extension(sourcePath).toLowerCase();
+    final String safeExtension = extension.isEmpty ? '.jpg' : extension;
+    return 'TP_${_fileNameFormatter.format(DateTime.now())}$safeExtension';
+  }
+
+  Future<File?> _saveToTripPlannerAlbum(
+      File sourceFile, String fileName) async {
+    try {
+      final Directory albumDir =
+          Directory('/storage/emulated/0/Pictures/Trip Planner');
+      if (!await albumDir.exists()) {
+        await albumDir.create(recursive: true);
+      }
+
+      final File albumFile = File('${albumDir.path}/$fileName');
+      final copiedFile = await sourceFile.copy(albumFile.path);
+
+      try {
+        await _mediaScannerChannel.invokeMethod('scanFile', {
+          'path': copiedFile.path,
+        });
+      } catch (e) {
+        log('Media scanner failed for ${copiedFile.path}: $e');
+      }
+
+      return copiedFile;
+    } catch (e) {
+      log('Failed to save file to Trip Planner album: $e');
+      return null;
+    }
+  }
+
+  Future<File> _saveToInternalStorage(File sourceFile, String fileName) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    return sourceFile.copy('${appDir.path}/$fileName');
+  }
+
   _saveCameraImage() async {
     final picker = ImagePicker();
     final XFile? imagePicked =
@@ -63,18 +106,16 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
     if (imagePicked != null && imagePicked.path.isNotEmpty) {
       log('Camera image picked: ${imagePicked.path}');
       final File imageFile = File(imagePicked.path);
-      final appDir = await getApplicationDocumentsDirectory();
-      final fileName = path_lib.basename(imageFile.path);
-      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
+      final fileName = _buildFileName(imageFile.path);
+      final savedImage = await _saveToInternalStorage(imageFile, fileName);
+      await _saveToTripPlannerAlbum(savedImage, fileName);
       log('Image saved to: ${savedImage.path}');
       if (!widget.activity.images!.contains(savedImage.path)) {
         log('Image added to activity images: ${savedImage.path}');
         itineraryProvider.addPhotoActivity(
             activity: widget.activity, pathImage: savedImage.path);
-        setState(() {
-          controller.loadImage();
-          log('Image added to local image list: ${savedImage.path}');
-        });
+        await controller.loadImage();
+        log('Image added to local image list: ${savedImage.path}');
       } else {
         log('Image already exists in activity images: ${savedImage.path}');
       }
@@ -90,19 +131,15 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
     if (imagePicked != null && imagePicked.path.isNotEmpty) {
       log('Gallery image picked: ${imagePicked.path}');
       final File imageFile = File(imagePicked.path);
-      final appDir = await getApplicationDocumentsDirectory();
-      final fileName = path_lib.basename(imageFile.path);
-      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
+      final fileName = _buildFileName(imageFile.path);
+      final savedImage = await _saveToInternalStorage(imageFile, fileName);
       log('Image saved to: ${savedImage.path}');
       if (!widget.activity.images!.contains(savedImage.path)) {
-        widget.activity.images!.add(savedImage.path);
         log('Image added to activity images: ${savedImage.path}');
         itineraryProvider.addPhotoActivity(
             activity: widget.activity, pathImage: savedImage.path);
-        setState(() {
-          controller.image.add(savedImage);
-          log('Image added to local image list: ${savedImage.path}');
-        });
+        await controller.loadImage();
+        log('Image added to local image list: ${savedImage.path}');
       } else {
         log('Image already exists in activity images: ${savedImage.path}');
       }
@@ -113,14 +150,14 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
 
   @override
   void initState() {
-    controller.dateIndex = widget.dayIndex;
     controller.itineraryProvider = itineraryProvider;
     // ignore: avoid_print
     print('widget : ${widget.activity.startDateTime}');
     // ignore: avoid_print
     print('widget 2 : ${widget.activity.startActivityTime}');
     controller.activity = widget.activity;
-    controller.day = itineraryProvider.getDateTime();
+    controller.activityDate =
+        itineraryProvider.itinerary.days[widget.dayIndex].date;
     requestPermission();
     cleanUpImages(); // Bersihkan daftar gambar sebelum inisialisasi
     controller.image.value =
@@ -244,71 +281,75 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          itineraryProvider.cleanPhotoActivity(activity: widget.activity);
-          controller.image.value =
-              controller.convertPathsToFiles(widget.activity.images!);
-          log('Initial images: ${widget.activity.images}');
-          await controller.loadImage();
+          await controller.syncGalleryIncremental(force: true);
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Obx(() => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Obx(() {
+            if (controller.isLoading.isTrue) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  const SizedBox(
-                    height: 6,
+                  const SizedBox(height: 100),
+                  Center(
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: LoadingAnimationWidget.discreteCircle(
+                        color: CustomColor.surface,
+                        size: 200,
+                      ),
+                    ),
                   ),
-                  controller.isLoading.isTrue
-                      ? Container(
-                          alignment: Alignment.center,
-                          color: CustomColor.surface,
-                          child: SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: LoadingAnimationWidget.discreteCircle(
-                              color: CustomColor.surface,
-                              size: 200,
-                            ),
-                          ),
-                        )
-                      : controller.image.isNotEmpty
-                          ? MasonryView(
-                              listOfItem: controller.image,
-                              numberOfColumn: 2,
-                              itemBuilder: (item) {
-                                final file = item as File;
-                                return GestureDetector(
-                                  onTap: () {
-                                    _showImageDialog(file);
-                                  },
-                                  onLongPress: () {
-                                    controller.showDeleteConfirmationDialog(
-                                        context, file);
-                                  },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.file(
-                                      file,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                );
-                              },
-                            )
-                          : const Expanded(
-                              child: Center(
-                                child: Text(
-                                  "Tidak ada gambar yang ditampilkan",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontFamily: 'poppins',
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
                 ],
-              )),
+              );
+            }
+
+            if (controller.image.isEmpty) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 220),
+                  Center(
+                    child: Text(
+                      "Tidak ada gambar yang ditampilkan",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'poppins',
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: MasonryView(
+                listOfItem: controller.image,
+                numberOfColumn: 2,
+                itemBuilder: (item) {
+                  final file = item as File;
+                  return GestureDetector(
+                    onTap: () {
+                      _showImageDialog(file);
+                    },
+                    onLongPress: () {
+                      controller.showDeleteConfirmationDialog(context, file);
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.file(
+                        file,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          }),
         ),
       ),
       floatingActionButton: FloatingActionButton(

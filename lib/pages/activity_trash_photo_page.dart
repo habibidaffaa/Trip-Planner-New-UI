@@ -20,17 +20,88 @@ class ActivityTrashPhotoPage extends StatefulWidget {
 
 class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
   final controller = Get.put(PhotoController());
-  late List<File> removedImages;
 
-  @override
-  void initState() {
-    removedImages = widget.activity.removedImages
-            ?.map(
-              (e) => File(e),
-            )
-            .toList() ??
-        [];
-    super.initState();
+  List<File> get removedImages => (widget.activity.removedImages ?? const [])
+      .where((path) => path.isNotEmpty)
+      .map((path) => File(path))
+      .toList();
+
+  Future<void> _confirmRestorePhoto(File file) async {
+    final shouldRestore = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          title: const Text(
+            'Pulihkan Foto',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'poppins_bold',
+              color: Color(0xFFC58940),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: const Text(
+            'Apa kamu yakin ingin mengembalikan foto ini?',
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 24),
+                    child: const Text(
+                      'Batal',
+                      style: TextStyle(
+                        fontFamily: 'poppins_bold',
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 24),
+                    child: const Text(
+                      'Pulihkan',
+                      style: TextStyle(
+                        fontFamily: 'poppins_bold',
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldRestore == true) {
+      await controller.returnPhoto(file);
+      if (mounted) {
+        setState(() {});
+      }
+    }
   }
 
   void _showImageDialog(File imageFile) {
@@ -151,7 +222,7 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
                         _showImageDialog(file);
                       },
                       onLongPress: () {
-                        controller.showReturnConfirmationDialog(context, file);
+                        _confirmRestorePhoto(file);
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),

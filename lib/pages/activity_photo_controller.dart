@@ -3,87 +3,183 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:iterasi1/model/activity.dart';
-import 'package:iterasi1/model/day.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
-import 'package:native_exif/native_exif.dart';
+import 'package:path/path.dart' as path_lib;
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 
 class PhotoController extends GetxController {
   RxList<File> image = <File>[].obs;
-  List<File> files = <File>[].obs;
   RxBool isLoading = true.obs;
   late Activity activity;
-  late List<Day> day;
-  int dateIndex = 0;
-  // late ItineraryProvider itineraryProvider;
+  late String activityDate;
   late ItineraryProvider itineraryProvider =
       Provider.of<ItineraryProvider>(Get.context!, listen: false);
 
   @override
   void onInit() {
-    loadImage();
     super.onInit();
   }
 
   Future<void> loadImage() async {
     isLoading.value = true;
-    List<File> filedb = <File>[];
-    var imagesave = itineraryProvider.getImage(activity);
-    List<String> filteredA = imagesave
-        .where((item) => !(activity.removedImages?.contains(item) ?? false))
-        .toList();
-    log(filteredA.length.toString());
-    for (var i = 0; i < filteredA.length; i++) {
-      log(filteredA[i]);
-      filedb.add(File(filteredA[i]));
-    }
-    if (filedb.isNotEmpty) {
-      image.value = filedb;
-      print("filedb");
-    } else {
-      var files = await loadNewPhotos();
-      log('files : $files');
-      if (files.isNotEmpty) {
-        log('files not empty');
-        image.value = files;
-        for (var i = 0; i < files.length; i++) {
-          itineraryProvider.addPhotoActivity(
-            activity: activity,
-            pathImage: image[i].path,
-          );
-        }
-      }
-    }
+    loadCachedImagesOnly();
+    await syncGalleryIncremental();
 
     isLoading.value = false;
   }
 
-  Future<List<File>> loadNewPhotos() async {
-    isLoading.value = true;
-    var result = await PhotoManager.requestPermissionExtend();
-    if (result.isAuth) {
-      List<AssetPathEntity> albums = await PhotoManager.getAssetPathList();
-      List<AssetEntity> assets =
-          await albums.first.getAssetListPaged(page: 0, size: 200);
-      List<File> files = [];
-      for (var asset in assets) {
-        var file = await asset.originFile;
-        if (file != null &&
-            !(activity.removedImages?.contains(file.path) ?? false) &&
-            await matchesActivityTime(file)) {
-          files.add(file);
+  void loadCachedImagesOnly() {
+    final imagesave = itineraryProvider.getImage(activity);
+    final filteredA = imagesave
+        .where((item) => !(activity.removedImages?.contains(item) ?? false))
+        .toList();
+    final filedb = convertPathsToFiles(filteredA);
+    image.value = filedb;
+  }
+
+  DateTime? _parseActivityDate() {
+    final parts = activityDate.split('/');
+    if (parts.length != 3) {
+      return null;
+    }
+
+    final day = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    final year = int.tryParse(parts[2]);
+
+    if (day == null || month == null || year == null) {
+      return null;
+    }
+
+    return DateTime(year, month, day);
+  }
+
+  bool _isWithinActivityWindow(DateTime photoDateTime) {
+    final selectedDate = _parseActivityDate();
+    if (selectedDate == null) {
+      return false;
+    }
+
+    if (photoDateTime.year != selectedDate.year ||
+        photoDateTime.month != selectedDate.month ||
+        photoDateTime.day != selectedDate.day) {
+      return false;
+    }
+
+    final start = activity.startTimeOfDay;
+    final end = activity.endTimeOfDay;
+
+    final startMinute = (start.hour * 60) + start.minute;
+    final endMinute = (end.hour * 60) + end.minute;
+    final photoMinute = (photoDateTime.hour * 60) + photoDateTime.minute;
+
+    if (endMinute < startMinute) {
+      return false;
+    }
+
+    return photoMinute >= startMinute && photoMinute <= endMinute;
+  }
+
+  String _sanitizeHash(String rawHash) {
+    return rawHash.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
+  }
+
+  String _buildAssetHash(AssetEntity asset) {
+    return _sanitizeHash(
+      '${asset.id}_${asset.createDateTime.millisecondsSinceEpoch}',
+    );
+  }
+
+  Future<void> syncGalleryIncremental({bool force = false}) async {
+    try {
+      final permission = await PhotoManager.requestPermissionExtend();
+      if (!permission.isAuth) {
+        return;
+      }
+
+      final albums = await PhotoManager.getAssetPathList(
+        type: RequestType.image,
+      );
+      if (albums.isEmpty) {
+        return;
+      }
+
+      final appDir = await getApplicationDocumentsDirectory();
+
+      final existing = Set<String>.from(activity.images ?? const <String>[]);
+      final removed =
+          Set<String>.from(activity.removedImages ?? const <String>[]);
+      final hiddenHashes =
+          Set<String>.from(activity.hiddenPhotoHashes ?? const <String>[]);
+      final lastScanEpochMs = activity.lastGalleryScanEpochMs ?? 0;
+      int newestScanEpochMs = lastScanEpochMs;
+
+      for (final album in albums) {
+        final assets = await album.getAssetListPaged(page: 0, size: 1200);
+
+        for (final asset in assets) {
+          final createdAt = asset.createDateTime;
+          final createdAtEpochMs = createdAt.millisecondsSinceEpoch;
+
+          if (!force && createdAtEpochMs <= lastScanEpochMs) {
+            continue;
+          }
+
+          if (createdAtEpochMs > newestScanEpochMs) {
+            newestScanEpochMs = createdAtEpochMs;
+          }
+
+          if (!_isWithinActivityWindow(createdAt)) {
+            continue;
+          }
+
+          final assetHash = _buildAssetHash(asset);
+          if (hiddenHashes.contains(assetHash)) {
+            continue;
+          }
+
+          final originalFile = await asset.originFile;
+          if (originalFile == null) {
+            continue;
+          }
+
+          final extension = path_lib.extension(originalFile.path).toLowerCase();
+          final safeExtension = extension.isEmpty ? '.jpg' : extension;
+          final internalName = 'AUTO_$assetHash$safeExtension';
+          final internalPath = '${appDir.path}/$internalName';
+
+          final internalFile = File(internalPath);
+          if (!await internalFile.exists()) {
+            await originalFile.copy(internalPath);
+          }
+
+          if (removed.contains(internalPath) ||
+              existing.contains(internalPath)) {
+            continue;
+          }
+
+          itineraryProvider.addPhotoActivity(
+            activity: activity,
+            pathImage: internalPath,
+          );
+          existing.add(internalPath);
         }
       }
-      isLoading.value = false;
-      return files;
-    } else {
-      isLoading.value = false;
-      print('tidak masuk');
-      PhotoManager.openSetting();
-      return [];
+
+      final nowEpochMs = DateTime.now().millisecondsSinceEpoch;
+      final targetEpochMs =
+          newestScanEpochMs > nowEpochMs ? newestScanEpochMs : nowEpochMs;
+      itineraryProvider.updateLastGalleryScan(
+        activity,
+        targetEpochMs,
+        shouldNotify: false,
+      );
+      loadCachedImagesOnly();
+    } catch (e) {
+      log('Auto import photos failed: $e');
     }
   }
 
@@ -132,27 +228,6 @@ class PhotoController extends GetxController {
       }
     }
     return files;
-  }
-
-  Future<bool> matchesActivityTime(File image) async {
-    var metadata = await Exif.fromPath(image.path);
-    DateTime? photoDate = await metadata.getOriginalDate();
-    String start = "${day[dateIndex].date} ${activity.startActivityTime}";
-    DateTime startTime = DateFormat("d/M/yyyy HH.mm").parse(start);
-
-    String end = "${day[dateIndex].date} ${activity.endActivityTime}";
-    DateTime endTime = DateFormat("d/M/yyyy HH.mm").parse(end);
-
-    DateTime activityStart = startTime;
-    DateTime activityEnd = endTime;
-    print('date : $photoDate , start : $activityStart, end : $activityEnd');
-    if (photoDate != null &&
-        photoDate.isAfter(activityStart) &&
-        photoDate.isBefore(activityEnd)) {
-      return true;
-    } else {
-      return false;
-    }
   }
 
   Future<void> deletePhoto(File image) async {

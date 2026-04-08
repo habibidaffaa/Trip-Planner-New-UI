@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -81,6 +82,60 @@ class _AddDaysState extends State<AddDays> {
       isEditing = false;
     });
     return true;
+  }
+
+  Future<void> _safeDeleteFile(String filePath) async {
+    try {
+      final file = File(filePath);
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (e) {
+      log('Failed deleting file: $filePath, error: $e');
+    }
+  }
+
+  String? _extractAutoPhotoHash(String filePath) {
+    final fileName = filePath.split(Platform.pathSeparator).last;
+    if (!fileName.startsWith('AUTO_')) {
+      return null;
+    }
+
+    final extensionIndex = fileName.lastIndexOf('.');
+    final rawHash = extensionIndex > 5
+        ? fileName.substring(5, extensionIndex)
+        : fileName.substring(5);
+
+    if (rawHash.isEmpty) {
+      return null;
+    }
+    return itineraryProvider.normalizeHiddenPhotoHash(rawHash);
+  }
+
+  Future<void> _finalizeRemovedPhotos() async {
+    for (final day in itineraryProvider.itinerary.days) {
+      for (final activity in day.activities) {
+        final removedPaths =
+            List<String>.from(activity.removedImages ?? const <String>[]);
+
+        for (final removedPath in removedPaths) {
+          final hiddenHash = _extractAutoPhotoHash(removedPath);
+          if (hiddenHash != null) {
+            itineraryProvider.addHiddenPhotoHashForActivity(
+              activity: activity,
+              hash: hiddenHash,
+              shouldNotify: false,
+            );
+          }
+
+          await _safeDeleteFile(removedPath);
+        }
+      }
+    }
+
+    final removedPaths = itineraryProvider.getAllRemovedPhotoPaths();
+    itineraryProvider.purgeRemovedPhotoReferences(removedPaths,
+        shouldNotify: false);
   }
 
 // Fungsi untuk meminta permission galeri dan navigasi jika izin diberikan
@@ -661,6 +716,7 @@ class _AddDaysState extends State<AddDays> {
 
     context.loaderOverlay.show();
     try {
+      await _finalizeRemovedPhotos();
       await databaseProvider.insertItinerary(
           itinerary: itineraryProvider.itinerary);
       itineraryProvider.syncInitialItinerary();

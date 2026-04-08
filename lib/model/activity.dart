@@ -14,6 +14,8 @@ class Activity {
   bool isCustomLocation;
   List<String>? images; // Nullable List<String>
   List<String>? removedImages; // Nullable List<String>
+  List<String>? hiddenPhotoHashes;
+  int? lastGalleryScanEpochMs;
 
   static final _formatter24 = DateFormat('HH.mm', 'id_ID');
   static final _formatter12 = DateFormat('h:mm a', 'en_US');
@@ -30,9 +32,13 @@ class Activity {
     String? longtitude,
     List<String>? removedImages,
     List<String>? images,
+    List<String>? hiddenPhotoHashes,
+    int? lastGalleryScanEpochMs,
   })  : id = id ?? const Uuid().v4(),
         images = images ?? [],
-        removedImages = removedImages ?? [];
+        removedImages = removedImages ?? [],
+        hiddenPhotoHashes = hiddenPhotoHashes ?? [],
+        lastGalleryScanEpochMs = lastGalleryScanEpochMs;
 
   Map<String, dynamic> toJson() {
     return {
@@ -46,6 +52,8 @@ class Activity {
       'is_custom_location': isCustomLocation,
       'images': images, // Sertakan data images dalam JSON
       'removed_images': removedImages, // Sertakan data images dalam JSON
+      'hidden_photo_hashes': hiddenPhotoHashes,
+      'last_gallery_scan_epoch_ms': lastGalleryScanEpochMs,
     };
   }
 
@@ -66,6 +74,10 @@ class Activity {
             ? List<String>.from(json[
                 'removed_images']) // Ubah List<dynamic> menjadi List<String>
             : [], // Atur images ke List kosong jika null
+        hiddenPhotoHashes: json['hidden_photo_hashes'] != null
+            ? List<String>.from(json['hidden_photo_hashes'])
+            : [],
+        lastGalleryScanEpochMs: json['last_gallery_scan_epoch_ms'],
       );
 
   factory Activity.fromJsonGPT(Map<String, dynamic> json) {
@@ -109,6 +121,8 @@ class Activity {
     List<String>? images, // Tambahkan parameter images ke dalam metode copy
     List<String>?
         removedImages, // Tambahkan parameter images ke dalam metode copy
+    List<String>? hiddenPhotoHashes,
+    int? lastGalleryScanEpochMs,
   }) =>
       Activity(
         id: id,
@@ -123,6 +137,10 @@ class Activity {
         images: images ?? List<String>.from(this.images ?? []),
         removedImages:
             removedImages ?? List<String>.from(this.removedImages ?? []),
+        hiddenPhotoHashes: hiddenPhotoHashes ??
+            List<String>.from(this.hiddenPhotoHashes ?? []),
+        lastGalleryScanEpochMs:
+            lastGalleryScanEpochMs ?? this.lastGalleryScanEpochMs,
       );
 
   TimeOfDay get startTimeOfDay => _parseTimeOfDay(startActivityTime);

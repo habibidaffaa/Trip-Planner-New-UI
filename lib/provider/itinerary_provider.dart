@@ -121,16 +121,51 @@ class ItineraryProvider extends ChangeNotifier {
 
   void addPhotoActivity(
       {required Activity activity, required String pathImage}) {
-    activity.images!.add(pathImage);
+    if (!(activity.images?.contains(pathImage) ?? false)) {
+      activity.images!.add(pathImage);
+    }
+    activity.removedImages?.remove(pathImage);
     log("ADD IMAGE $pathImage");
     notifyListeners();
+  }
+
+  String normalizeHiddenPhotoHash(String rawHash) {
+    return rawHash.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
+  }
+
+  void addHiddenPhotoHashForActivity({
+    required Activity activity,
+    required String hash,
+    bool shouldNotify = true,
+  }) {
+    final normalizedHash = normalizeHiddenPhotoHash(hash);
+    activity.hiddenPhotoHashes ??= [];
+    if (!activity.hiddenPhotoHashes!.contains(normalizedHash)) {
+      activity.hiddenPhotoHashes!.add(normalizedHash);
+      if (shouldNotify) {
+        notifyListeners();
+      }
+    }
+  }
+
+  void updateLastGalleryScan(
+    Activity activity,
+    int epochMs, {
+    bool shouldNotify = false,
+  }) {
+    activity.lastGalleryScanEpochMs = epochMs;
+    if (shouldNotify) {
+      notifyListeners();
+    }
   }
 
   void removePhotoActivity({
     required Activity activity,
     required String pathImage,
   }) {
-    activity.removedImages!.add(pathImage);
+    if (!(activity.removedImages?.contains(pathImage) ?? false)) {
+      activity.removedImages!.add(pathImage);
+    }
     log("ADD TO REMOVED IMAGE $pathImage");
     log("removed images" + activity.removedImages.toString());
     notifyListeners();
@@ -152,6 +187,36 @@ class ItineraryProvider extends ChangeNotifier {
     activity.images = [];
     log("CLEANING");
     notifyListeners();
+  }
+
+  Set<String> getAllRemovedPhotoPaths() {
+    final paths = <String>{};
+    for (final day in _itinerary.days) {
+      for (final activity in day.activities) {
+        paths.addAll(activity.removedImages ?? const <String>[]);
+      }
+    }
+    return paths;
+  }
+
+  void purgeRemovedPhotoReferences(
+    Set<String> removedPaths, {
+    bool shouldNotify = true,
+  }) {
+    if (removedPaths.isEmpty) {
+      return;
+    }
+
+    for (final day in _itinerary.days) {
+      for (final activity in day.activities) {
+        activity.images?.removeWhere(removedPaths.contains);
+        activity.removedImages?.removeWhere(removedPaths.contains);
+      }
+    }
+
+    if (shouldNotify) {
+      notifyListeners();
+    }
   }
 
   Future<List<Activity>> getSortedActivity(List<Activity> activities) async {
